@@ -247,7 +247,7 @@ const createBooking = async (req, res) => {
 }
 
 const getCurrentUserBooking = async (req, res) => {
-	const { UserId } = req.params
+	const { UserId } = req.query
 	const args = {
 		where: {
 			status: {
