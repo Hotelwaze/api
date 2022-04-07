@@ -6,7 +6,7 @@ import moment from 'moment-timezone'
 import paymongoService from '../services/paymongo.service'
 import { v4 as uuid } from 'uuid'
 
-const { Booking, Car, Partner, CarModel, CarType, Fee, CarBooking, Place, Invoice, InvoiceItem } = model
+const { Booking, Car, Partner, CarModel, CarType, Fee, CarBooking, Place, Invoice, InvoiceItem, CarMake } = model
 
 const createBooking = async (req, res) => {
 	const {
@@ -257,7 +257,13 @@ const getCurrentUserBooking = async (req, res) => {
 		include: [
 			{
 				model: Car,
-				as: 'cars'
+				as: 'cars',
+				include: [
+					{
+						model: CarMake,
+						as: 'cars'
+					}
+				]
 			}
 		]
 	}
