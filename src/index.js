@@ -20,7 +20,7 @@ import bookingRoutes from './routes/booking.routes'
 import listenerRoutes from './routes/listener.routes'
 
 const app = express()
-const port = 8082
+const port = 8083
 
 const allowedDomains = [
 	'https://staging.admin.hotelwaze.com',
