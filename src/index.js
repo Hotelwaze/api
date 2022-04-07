@@ -4,6 +4,7 @@ import path from 'path'
 import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
+import dotenv from 'dotenv'
 
 import roleRoutes from './routes/role.routes'
 import partnerTypeRoutes from './routes/partner-type.routes'
@@ -19,8 +20,10 @@ import authRoutes from './routes/auth.routes'
 import bookingRoutes from './routes/booking.routes'
 import listenerRoutes from './routes/listener.routes'
 
+dotenv.config()
+
 const app = express()
-const port = 8083
+const port = process.env.PORT
 
 const allowedDomains = [
 	'https://staging.admin.hotelwaze.com',
