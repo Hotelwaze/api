@@ -266,6 +266,10 @@ const getCurrentUserBooking = async (req, res) => {
 							{
 								model: CarMake,
 								as: 'make'
+							},
+							{
+								model: CarType,
+								as: 'carType'
 							}
 						]
 					}
