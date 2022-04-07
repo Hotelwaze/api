@@ -246,6 +246,40 @@ const createBooking = async (req, res) => {
 	}
 }
 
+const getCurrentUserBooking = async (req, res) => {
+	const { UserId } = req.params
+	const args = {
+		where: {
+			status: {
+				[Op.or]: ['booked', 'active']
+			}
+		}
+	}
+
+	try {
+		if (UserId !== undefined && UserId !== null && UserId !== '') {
+			args.where.UserId = UserId
+		} else {
+			const error = new Error('UserId is required.')
+			error.code = 403
+			throw error
+		}
+
+		const result = await Booking.findOne(args)
+
+		res.status(200).send({
+			message: 'Query successful',
+			data: result,
+		})
+	} catch (error) {
+		res.status(error.code || 500).send({
+			success: error.success,
+			message: error.message,
+		})
+	}
+}
+
 export default {
-	createBooking
+	createBooking,
+	getCurrentUserBooking
 }

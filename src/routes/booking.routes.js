@@ -9,6 +9,13 @@ const bookingRoutes = (app) => {
 		],
 		bookingController.createBooking
 	)
+	app.get(
+		'/bookings/user/current',
+		[
+			verifyToken, isCustomer
+		],
+		bookingController.getCurrentUserBooking
+	)
 }
 
 export default bookingRoutes
