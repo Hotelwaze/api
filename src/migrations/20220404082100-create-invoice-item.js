@@ -1,24 +1,26 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
-		await queryInterface.createTable('TransactionItems', {
+		await queryInterface.createTable('InvoiceItems', {
 			id: {
 				allowNull: false,
 				autoIncrement: true,
 				primaryKey: true,
 				type: Sequelize.INTEGER.UNSIGNED,
 			},
-			description: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			type: {
-				type: Sequelize.STRING(20),
-				allowNull: false,
-			},
 			amount: {
 				type: Sequelize.INTEGER,
-				allowNull: false,
-				default: 0
+			},
+			currency: {
+				type: Sequelize.STRING(3),
+			},
+			description: {
+				type: Sequelize.STRING,
+			},
+			startDate: {
+				type: Sequelize.DATE,
+			},
+			endDate: {
+				type: Sequelize.DATE,
 			},
 			createdAt: {
 				allowNull: false,
@@ -34,6 +36,6 @@ module.exports = {
 		})
 	},
 	down: async (queryInterface) => {
-		await queryInterface.dropTable('TransactionItems')
+		await queryInterface.dropTable('InvoiceItems')
 	},
 }
