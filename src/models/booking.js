@@ -7,14 +7,15 @@ module.exports = (sequelize, DataTypes) => {
 		static associate(models) {
 			this.belongsTo(models.User, {
 				foreignKey: 'UserId',
-			})
-			this.belongsToMany(models.Role, {
-				through: 'booking_item',
-				as: 'booking'
+				as: 'customer'
 			})
 		}
 	}
 	Booking.init({
+		ref: {
+			type: DataTypes.STRING,
+			allowNull: false
+		},
 		UserId: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
@@ -33,6 +34,18 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		notes: {
 			type: DataTypes.TEXT,
+		},
+		paymentIntentId: {
+			type: DataTypes.STRING,
+		},
+		status: {
+			type: DataTypes.ENUM([
+				'pending',
+				'booked',
+				'active',
+				'done',
+				'cancelled'
+			])
 		},
 		createdAt: {
 			type: 'TIMESTAMP',

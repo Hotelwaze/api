@@ -14,8 +14,9 @@ import carMakeRoutes from './routes/car-make.routes'
 import carTypeRoutes from './routes/car-type.routes'
 import carModelRoutes from './routes/car-model.routes'
 import carRoutes from './routes/car.routes'
-import optionRoutes from './routes/option.routes'
+import feeRoutes from './routes/fee.routes'
 import authRoutes from './routes/auth.routes'
+import bookingRoutes from './routes/booking.routes'
 
 const app = express()
 const port = 8082
@@ -66,8 +67,9 @@ carMakeRoutes(app)
 carTypeRoutes(app)
 carModelRoutes(app)
 carRoutes(app)
-optionRoutes(app)
+feeRoutes(app)
 authRoutes(app)
+bookingRoutes(app)
 
 app.use((req, res) => {
 	res.status(404).send('404: Page not found')

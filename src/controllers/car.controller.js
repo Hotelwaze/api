@@ -192,7 +192,6 @@ const getCarsNearby = async (req, res) => {
 		})
 
 		res.status(200).send({
-			success: true,
 			message: 'Query successful',
 			data: availableCarGroups
 		})

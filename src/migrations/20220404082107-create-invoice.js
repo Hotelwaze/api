@@ -1,45 +1,26 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
-		await queryInterface.createTable('Bookings', {
+		await queryInterface.createTable('Invoices', {
 			id: {
 				allowNull: false,
 				autoIncrement: true,
 				primaryKey: true,
 				type: Sequelize.INTEGER.UNSIGNED,
 			},
-			ref: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			startDate: {
-				type: Sequelize.DATE,
-				allowNull: false,
-			},
-			endDate: {
-				type: Sequelize.DATE,
-				allowNull: false,
-			},
-			totalPrice: {
-				type: Sequelize.INTEGER,
-				allowNull: false,
-			},
-			percentDiscount: {
-				type: Sequelize.DECIMAL(5.2),
-			},
-			notes: {
-				type: Sequelize.TEXT,
-			},
-			paymentIntentId: {
+			number: {
 				type: Sequelize.STRING,
 			},
 			status: {
-				type: Sequelize.ENUM([
-					'pending',
-					'booked',
-					'active',
-					'done',
-					'cancelled'
-				])
+				type: Sequelize.ENUM('open', 'paid'),
+				allowNull: false,
+			},
+			ref: {
+				type: Sequelize.STRING,
+			},
+			currency: {
+				type: Sequelize.STRING(3),
+				allowNull: false,
+				unique: true,
 			},
 			createdAt: {
 				allowNull: false,
@@ -55,6 +36,6 @@ module.exports = {
 		})
 	},
 	down: async (queryInterface) => {
-		await queryInterface.dropTable('Bookings')
+		await queryInterface.dropTable('Invoices')
 	},
 }

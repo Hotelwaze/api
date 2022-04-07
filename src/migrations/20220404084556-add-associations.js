@@ -104,6 +104,32 @@ module.exports = {
 				onDelete: 'SET NULL',
 			},
 		)
+		await queryInterface.addColumn(
+			'InvoiceItems', // name of Source model
+			'InvoiceId', // name of the key we're adding
+			{
+				type: Sequelize.INTEGER.UNSIGNED,
+				references: {
+					model: 'Invoices', // name of Target model
+					key: 'id', // key in Target model that we're referencing
+				},
+				onUpdate: 'CASCADE',
+				onDelete: 'SET NULL',
+			},
+		)
+		await queryInterface.addColumn(
+			'Invoices', // name of Source model
+			'BookingId', // name of the key we're adding
+			{
+				type: Sequelize.INTEGER.UNSIGNED,
+				references: {
+					model: 'Bookings', // name of Target model
+					key: 'id', // key in Target model that we're referencing
+				},
+				onUpdate: 'CASCADE',
+				onDelete: 'SET NULL',
+			},
+		)
 	},
 
 	down: async (queryInterface) => {
@@ -132,8 +158,16 @@ module.exports = {
 			'UserId',
 		)
 		await queryInterface.removeColumn(
-			'RefreshToken',
+			'RefreshTokens',
 			'UserId',
+		)
+		await queryInterface.removeColumn(
+			'InvoiceItems',
+			'InvoiceId',
+		)
+		await queryInterface.removeColumn(
+			'Invoices',
+			'BookingId',
 		)
 	},
 }

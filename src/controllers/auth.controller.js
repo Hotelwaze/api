@@ -2,6 +2,10 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import model from '../models'
 import authConfig from '../config/auth.config'
+import mailer from '../services/mail.service'
+import handlebars from 'handlebars'
+import fs from 'fs'
+import path from 'path'
 
 const { User, RefreshToken } = model
 
@@ -43,6 +47,7 @@ const refreshToken = async (req, res) => {
 					firstName: user.firstName,
 					lastName: user.lastName,
 					mobile: user.mobile,
+					PartnerId: user.PartnerId,
 					roles: authorities
 				},
 				authConfig.secret, {
@@ -61,7 +66,7 @@ const refreshToken = async (req, res) => {
 	}
 }
 
-const login = async (req, res) => {
+const customerLogin = async (req, res) => {
 	const { email, password } = req.body
 
 	try {
@@ -105,6 +110,12 @@ const login = async (req, res) => {
 			for (let i = 0; i < roles.length; i += 1) {
 				authorities.push(roles[i].name)
 			}
+			
+			if (!authorities.includes('customer')) {
+				const error = new Error('Different account type. Access is not allowed.')
+				error.code = 403
+				throw error
+			}
 
 			const accessToken = jwt.sign(
 				{
@@ -114,6 +125,7 @@ const login = async (req, res) => {
 					firstName: user.firstName,
 					lastName: user.lastName,
 					mobile: user.mobile,
+					PartnerId: user.PartnerId,
 					roles: authorities
 				},
 				authConfig.secret, {
@@ -123,17 +135,16 @@ const login = async (req, res) => {
 
 			RefreshToken.createToken(user).then((token) => {
 				res.status(200).send({
-					status: 200,
-					success: true,
 					message: 'Login successful',
 					data: {
 						user: {
 							id: user.id,
 							email: user.email,
-							fullName: user.fullName,
+							name: user.fullName,
 							firstName: user.firstName,
 							lastName: user.lastName,
 							mobile: user.mobile,
+							PartnerId: user.PartnerId,
 							roles: authorities,
 						},
 						accessToken,
@@ -142,6 +153,11 @@ const login = async (req, res) => {
 				})
 			})
 		})
+			.catch ((err) => {
+				res.status(err.code || 500).send({
+					message: err.message,
+				})
+			})
 
 	} catch (err) {
 		res.status(err.code || 500).send({
@@ -150,54 +166,39 @@ const login = async (req, res) => {
 	}
 }
 
-const createUser = async (req, res) => {
-	const { email, password, name, mobile, RoleId, PartnerId, status } = req.body
+const createCustomer = async (req, res) => {
+	const { email, password, name } = req.body
 
 	try {
-		if (email === null) {
+		if (email === null || email === '') {
 			const error = new Error('Email is required.')
 			error.code = 403
 			throw error
 		}
 
-		if (password === null) {
+		if (password === null || password === '') {
 			const error = new Error('Password is required.')
 			error.code = 403
 			throw error
 		}
 
-		if (name === null) {
+		if (name === null || name === '') {
 			const error = new Error('Name is required.')
 			error.code = 403
 			throw error
 		}
 
-		const firstName = name.split(' ')[0]
-		const lastName = name.substring(firstName.length).trim()
-
 		let args = {
 			email,
 			password: bcrypt.hashSync(password, 11),
 			name,
-			firstName,
-			lastName,
-			emailVerified: false,
-			mobileVerified: false,
-			status
-		}
-
-		if (mobile) {
-			args.mobile = mobile
-		}
-
-		if (PartnerId) {
-			args.PartnerId = PartnerId
+			status: 'active'
 		}
 
 		await model.sequelize.transaction(async (t) => {
 			const user = await User.create(args, { transaction: t })
 
-			await user.setRoles([RoleId], { transaction: t })
+			await user.setRoles([3], { transaction: t })
 
 			user.getRoles().then((roles) => {
 				const authorities = []
@@ -210,9 +211,99 @@ const createUser = async (req, res) => {
 						id: user.id,
 						email: user.email,
 						name: user.name,
-						firstName: user.firstName,
-						lastName: user.lastName,
-						mobile: user.mobile,
+						roles: authorities
+					},
+					authConfig.secret, {
+						expiresIn: Number(authConfig.jwtExpiration),
+					},
+				)
+
+				RefreshToken.createToken(user).then((token) => {
+					const templateSource = fs.readFileSync(path.join(__dirname, '../../public/email/templates/new-user-welcome.hbs'), 'utf8')
+					const template = handlebars.compile(templateSource)
+					const htmlToSend = template({
+						name: user.name,
+					})
+					mailer(
+						'Welcome to Hotelwaze',
+						htmlToSend,
+						user.email
+					)
+					res.status(200).send({
+						message: 'Registration successful',
+						data: {
+							user: {
+								id: user.id,
+								email: user.email,
+								name: user.fullName,
+								roles: authorities,
+							},
+							accessToken,
+							refreshToken: token,
+						},
+					})
+				})
+			})
+				.catch((err) => {
+					console.log(err)
+					res.status(err.code || 500).send({
+						message: err.message,
+					})		
+				})
+		})
+	} catch (err) {
+		console.log(err)
+		res.status(err.code || 500).send({
+			message: err.message,
+		})
+	}
+}
+
+const createAdminUser = async (req, res) => {
+	const { email, password, name,  } = req.body
+
+	try {
+		if (email === null || email === '') {
+			const error = new Error('Email is required.')
+			error.code = 403
+			throw error
+		}
+
+		if (password === null || password === '') {
+			const error = new Error('Password is required.')
+			error.code = 403
+			throw error
+		}
+
+		if (name === null || name === '') {
+			const error = new Error('Name is required.')
+			error.code = 403
+			throw error
+		}
+
+		let args = {
+			email,
+			password: bcrypt.hashSync(password, 11),
+			name,
+			status: 'active'
+		}
+
+		await model.sequelize.transaction(async (t) => {
+			const user = await User.create(args, { transaction: t })
+
+			await user.setRoles([3], { transaction: t })
+
+			user.getRoles().then((roles) => {
+				const authorities = []
+				for (let i = 0; i < roles.length; i += 1) {
+					authorities.push(roles[i].name)
+				}
+
+				const accessToken = jwt.sign(
+					{
+						id: user.id,
+						email: user.email,
+						name: user.name,
 						roles: authorities
 					},
 					authConfig.secret, {
@@ -222,17 +313,12 @@ const createUser = async (req, res) => {
 
 				RefreshToken.createToken(user).then((token) => {
 					res.status(200).send({
-						status: 200,
-						success: true,
 						message: 'Registration successful',
 						data: {
 							user: {
 								id: user.id,
 								email: user.email,
-								fullName: user.fullName,
-								firstName: user.firstName,
-								lastName: user.lastName,
-								mobile: user.mobile,
+								name: user.fullName,
 								roles: authorities,
 							},
 							accessToken,
@@ -250,8 +336,75 @@ const createUser = async (req, res) => {
 	}
 }
 
+const createPartnerUser = async (req, res) => {
+	const { email, password, name, PartnerId, rolesList } = req.body
+
+	try {
+		if (email === null || email === '') {
+			const error = new Error('Email is required.')
+			error.code = 403
+			throw error
+		}
+
+		if (password === null || password === '') {
+			const error = new Error('Password is required.')
+			error.code = 403
+			throw error
+		}
+
+		if (name === null || name === '') {
+			const error = new Error('Name is required.')
+			error.code = 403
+			throw error
+		}
+
+		if (PartnerId === null || PartnerId === '') {
+			const error = new Error('Name is required.')
+			error.code = 403
+			throw error
+		}
+
+		if (rolesList === null || rolesList === '' || rolesList.length === 0) {
+			const error = new Error('Role is required.')
+			error.code = 403
+			throw error
+		}
+
+		let args = {
+			email,
+			password: bcrypt.hashSync(password, 11),
+			name,
+			status: 'active'
+		}
+
+		await model.sequelize.transaction(async (t) => {
+			const user = await User.create(args, { transaction: t })
+
+			await user.setRoles(rolesList, { transaction: t })
+
+			user.getRoles().then((roles) => {
+				const authorities = []
+				for (let i = 0; i < roles.length; i += 1) {
+					authorities.push(roles[i].name)
+				}
+				
+				res.status(200).send({
+					message: 'New user was sucessfully added.',
+				})
+			})
+		})
+	} catch (err) {
+		console.log(err)
+		res.status(err.code || 500).send({
+			message: err.message,
+		})
+	}
+}
+
 export default {
-	login,
-	createUser,
-	refreshToken
+	refreshToken,
+	customerLogin,
+	createCustomer,
+	createAdminUser,
+	createPartnerUser,
 }
