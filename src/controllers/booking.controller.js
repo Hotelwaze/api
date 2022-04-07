@@ -272,6 +272,10 @@ const getCurrentUserBooking = async (req, res) => {
 								as: 'carType'
 							}
 						]
+					},
+					{
+						model: Partner,
+						as: 'partner'
 					}
 				]
 			}
