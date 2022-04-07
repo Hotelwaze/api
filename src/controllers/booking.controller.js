@@ -281,7 +281,7 @@ const getCurrentUserBooking = async (req, res) => {
 			},
 			{
 				model: Place,
-				as: 'place'
+				as: 'places'
 			}
 		]
 	}
