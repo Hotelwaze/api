@@ -278,6 +278,10 @@ const getCurrentUserBooking = async (req, res) => {
 						as: 'partner'
 					}
 				]
+			},
+			{
+				model: Place,
+				as: 'place'
 			}
 		]
 	}
