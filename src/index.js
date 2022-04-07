@@ -1,6 +1,7 @@
 import express from 'express'
 import fs from 'fs'
 import path from 'path'
+import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
 
@@ -13,11 +14,37 @@ import carMakeRoutes from './routes/car-make.routes'
 import carTypeRoutes from './routes/car-type.routes'
 import carModelRoutes from './routes/car-model.routes'
 import carRoutes from './routes/car.routes'
-import optionRoutes from './routes/option.routes'
+import feeRoutes from './routes/fee.routes'
 import authRoutes from './routes/auth.routes'
+import bookingRoutes from './routes/booking.routes'
+import listenerRoutes from './routes/listener.routes'
 
 const app = express()
 const port = 8082
+
+const allowedDomains = [
+	'https://staging.admin.hotelwaze.com',
+	'https://admin.hotelwaze.com',
+	'https://staging.hotelwaze.com',
+	'https://hotelwaze.com',
+	'https://www.hotelwaze.com',
+	'http://localhost:3000',
+]
+
+const corsOptions = {
+	origin: (origin, callback) => {
+		// bypass the requests with no origin (like curl requests, mobile apps, etc )
+		if (!origin) return callback(null, true)
+		if (allowedDomains.indexOf(origin) === -1) {
+			const msg = `This site ${origin} does not have an access. Only specific domains are allowed to access it.`
+			return callback(new Error(msg), false)
+		}
+		return callback(null, true)
+	},
+	credentials: true,
+}
+
+app.use(cors(corsOptions))
 
 const accessLogStream = fs.createWriteStream(
 	path.join(__dirname, '../access.log'),
@@ -41,8 +68,10 @@ carMakeRoutes(app)
 carTypeRoutes(app)
 carModelRoutes(app)
 carRoutes(app)
-optionRoutes(app)
+feeRoutes(app)
 authRoutes(app)
+bookingRoutes(app)
+listenerRoutes(app)
 
 app.use((req, res) => {
 	res.status(404).send('404: Page not found')

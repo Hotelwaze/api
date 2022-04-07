@@ -44,22 +44,14 @@ module.exports = (sequelize, DataTypes) => {
 			type: DataTypes.STRING,
 		},
 		PartnerId: {
-			type: DataTypes.INTEGER,
-		},
-		emailVerified: {
-			type: DataTypes.BOOLEAN,
-			allowNull: false,
-			default: false,
-		},
-		mobileVerified: {
-			type: DataTypes.BOOLEAN,
-			allowNull: false,
-			default: false,
+			type: DataTypes.INTEGER.UNSIGNED,
 		},
 		status: {
-			type: DataTypes.STRING,
-			allowNull: false,
-			default: 'active',
+			type: DataTypes.ENUM([
+				'pending',
+				'blocked',
+				'active'
+			]),
 		},
 		createdAt: {
 			type: 'TIMESTAMP',

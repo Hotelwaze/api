@@ -29,20 +29,12 @@ module.exports = {
 			mobile: {
 				type: Sequelize.STRING,
 			},
-			emailVerified: {
-				type: Sequelize.BOOLEAN,
-				allowNull: false,
-				defaultValue: false,
-			},
-			mobileVerified: {
-				type: Sequelize.BOOLEAN,
-				allowNull: false,
-				defaultValue: false,
-			},
 			status: {
-				type: Sequelize.STRING,
-				allowNull: false,
-				defaultValue: 'active',
+				type: Sequelize.ENUM([
+					'pending',
+					'blocked',
+					'active'
+				]),
 			},
 			createdAt: {
 				allowNull: false,

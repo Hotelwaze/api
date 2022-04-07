@@ -1,30 +1,29 @@
 import model from '../models'
 
-const { Option } = model
+const { Fee } = model
 
-const findOption = async (req, res) => {
-	const { key } = req.query
+const findFee = async (req, res) => {
+	const { name } = req.query
 
 	try {
 		const args = {}
 
-		if (key !== undefined && key !== null && key !== '') {
+		if (name !== null && name !== '') {
 			args.where = {
-				key,
+				name,
 			}
 		} else {
-			const error = new Error('Key is required.')
+			const error = new Error('Name is required.')
 			error.code = 403
 			throw error
 		}
 
-		const option = await Option.findOne(args)
+		const fee = await Fee.findOne(args)
 
 		res.status(200).send({
 			message: 'Query successful',
-			data: option,
+			data: fee,
 		})
-		return
 	} catch (err) {
 		res.status(err.code || 500).send({
 			success: err.success,
@@ -34,7 +33,7 @@ const findOption = async (req, res) => {
 }
 
 const optionController = {
-	findOption,
+	findFee,
 }
 
 export default optionController
