@@ -13,6 +13,14 @@ module.exports = (sequelize, DataTypes) => {
 				through: 'car_booking',
 				as: 'cars',
 			})
+			this.hasMany(models.Place, {
+				foreignKey: 'placeableId',
+				constraints: false,
+				as: 'places',
+				scope: {
+					placeableType: 'booking',
+				},
+			})
 		}
 	}
 	Booking.init({
