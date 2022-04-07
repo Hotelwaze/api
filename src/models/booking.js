@@ -9,6 +9,10 @@ module.exports = (sequelize, DataTypes) => {
 				foreignKey: 'UserId',
 				as: 'customer'
 			})
+			this.belongsToMany(models.Car, {
+				through: 'car_booking',
+				as: 'cars',
+			})
 		}
 	}
 	Booking.init({
