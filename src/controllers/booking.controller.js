@@ -253,7 +253,13 @@ const getCurrentUserBooking = async (req, res) => {
 			status: {
 				[Op.or]: ['booked', 'active']
 			}
-		}
+		},
+		include: [
+			{
+				model: Car,
+				as: 'car'
+			}
+		]
 	}
 
 	try {
