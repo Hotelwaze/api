@@ -13,7 +13,7 @@ jobs:
       - image: arvindr226/alpine-ssh
     steps:
       - checkout
-      - run: ssh -oStrictHostKeyChecking=no -v $DROPLET_USER@$PRODUCTION_DROPLET_IP "./deploy_api.sh"
+      - run: ssh -oStrictHostKeyChecking=no -v $DROPLET_USER@$PRODUCTION_DROPLET_IP "./deploy_prod_api.sh"
 
 # Orchestrate our job run sequence
 workflows:
