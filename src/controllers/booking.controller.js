@@ -257,7 +257,7 @@ const getCurrentUserBooking = async (req, res) => {
 		include: [
 			{
 				model: Car,
-				as: 'car'
+				as: 'cars'
 			}
 		]
 	}
