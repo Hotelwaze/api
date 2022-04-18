@@ -37,6 +37,12 @@ const authRoutes = (app) => {
 	app.post('/auth/customer-login', authController.customerLogin)
 
 	app.post('/auth/refresh-token', authController.refreshToken)
+
+	app.post('/auth/request-password-reset', authController.passwordResetRequest)
+
+	app.get('/auth/password-reset-link-check', authController.passwordResetLinkCheck)
+
+	app.post('/auth/password-reset', authController.passwordReset)
 }
 
 export default authRoutes
