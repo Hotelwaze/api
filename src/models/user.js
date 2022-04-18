@@ -53,6 +53,12 @@ module.exports = (sequelize, DataTypes) => {
 				'active'
 			]),
 		},
+		resetPasswordToken: {
+			type: DataTypes.STRING,
+		},
+		resetPasswordExpires: {
+			type: DataTypes.DATE,
+		},
 		createdAt: {
 			type: 'TIMESTAMP',
 		},

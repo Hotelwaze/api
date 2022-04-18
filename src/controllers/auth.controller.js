@@ -6,8 +6,114 @@ import mailer from '../services/mail.service'
 import handlebars from 'handlebars'
 import fs from 'fs'
 import path from 'path'
+import crypto from 'crypto'
+import { Op } from 'sequelize'
 
 const { User, RefreshToken } = model
+
+const passwordReset = async (req, res) => {
+	try {
+		const user = await User.findOne({
+			where: {
+				email: req.body.email,
+				resetPasswordToken: req.body.token,
+				resetPasswordExpires: {
+					[Op.gt]: Date.now()
+				}
+			}
+		})
+
+		if (user !== null) {
+			user.update({
+				password: bcrypt.hashSync(req.body.password, 11),
+				resetPasswordToken: null,
+				resetPasswordExpires: null,
+			})
+			user.save()
+
+			res.status(200).send({
+				message: 'Password change successful. You may now login using your new password.',
+			})
+		} else {
+			const error = new Error('Password reset link is invalid or has expired.')
+			error.code = 403
+			throw error
+		}
+	} catch (err) {
+		res.status(err.code || 500).send({
+			message: err.message,
+		})	
+	}
+}
+const passwordResetLinkCheck = async (req, res) => {
+	try {
+		const user = await User.findOne({
+			where: {
+				resetPasswordToken: req.query.token,
+				resetPasswordExpires: {
+					[Op.gt]: Date.now()
+				}
+			}
+		})
+
+		if (user === null) {
+			return res.status(403).json({ message: 'Password reset link is invalid or has expired' })
+		} else {
+			res.status(200).send({
+				message: 'Password reset link is valid.',
+				userEmail: user.email
+			})
+		}
+	} catch (err) {
+		res.status(err.code || 500).send({
+			message: err.message,
+		})	
+	}
+}
+
+const passwordResetRequest = async (req, res) => {
+	const { email } = req.body
+	if (email === '') {
+		return res.status(403).json({ message: 'Email is required!' })
+	}
+
+	try {
+		const user = await User.findOne({
+			where: {
+				email
+			}
+		})
+	
+		if (user === null) {
+			return res.status(403).json({ message: `User with email ${email} does not exists.` })
+		} else {
+			const token = crypto.randomBytes(20).toString('hex')
+			user.update({
+				resetPasswordToken: token,
+				resetPasswordExpires: Date.now() + 3600000
+			})
+			user.save()
+	
+			const templateSource = fs.readFileSync(path.join(__dirname, '../../public/email/templates/password-reset-request.hbs'), 'utf8')
+			const template = handlebars.compile(templateSource)
+			const htmlToSend = template({
+				token,
+			})
+			mailer(
+				'Password Reset Request',
+				htmlToSend,
+				user.email
+			)
+			res.status(200).send({
+				message: 'Password request email sent.',
+			})
+		}
+	} catch (err) {
+		res.status(err.code || 500).send({
+			message: err.message,
+		})	
+	}
+}
 
 const refreshToken = async (req, res) => {
 	const { refreshToken: requestToken } = req.body
@@ -402,6 +508,9 @@ const createPartnerUser = async (req, res) => {
 }
 
 export default {
+	passwordReset,
+	passwordResetLinkCheck,
+	passwordResetRequest,
 	refreshToken,
 	customerLogin,
 	createCustomer,
