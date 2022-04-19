@@ -85,7 +85,7 @@ const passwordResetRequest = async (req, res) => {
 		})
 	
 		if (user === null) {
-			return res.status(403).json({ message: `User with email ${email} does not exists.` })
+			return res.status(403).json({ message: `User with email ${email} does not exist.` })
 		} else {
 			const token = crypto.randomBytes(20).toString('hex')
 			user.update({
