@@ -11,7 +11,7 @@ export const verifyToken = async (req, res, next) => {
 
 	try {
 		if (typeof bearerHeader !== 'undefined') {
-			const bearer = bearerHeader.split(' ')
+			const bearer = await bearerHeader.split(' ')
 			bearerToken = bearer[1]
 		} else {
 			const error = new Error('No token provided!')
@@ -24,13 +24,14 @@ export const verifyToken = async (req, res, next) => {
 		})
 	}
 
-	jwt.verify(bearerToken, authConfig.secret, (err, decoded) => {
+	await jwt.verify(bearerToken, authConfig.secret, (err, decoded) => {
 		if (err) {
 			res.status(500).send({
 				message: err.message,
 			})
 		}
-		req.userId = decoded.id
+		console.log(decoded.user.id)
+		req.userId = decoded.user.id
 		next()
 	})
 }
@@ -54,7 +55,37 @@ export const isAdmin = async (req, res, next) => {
 				error.success = false
 				throw error
 			}
+			console.log(user.id)
+			req.userId = user.id
+			next()
+		}
+	} catch (error) {
+		return res.status(error.code || 500).send({
+			success: error.success,
+			message: error.message,
+		})
+	}
+}
 
+export const isPartner = async (req, res, next) => {
+	try {
+		const user = await User.findOne({
+			where: {
+				id: req.userId,
+			},
+		})
+
+		if (user) {
+			const roles = await user.getRoles()
+			roles.map((role) => role.id)
+
+			const roleExists = _.find(roles, (role) => role.name = 'partner_admin')
+			if (roleExists === undefined) {
+				const error = new Error('requires an admin role')
+				error.code = 404
+				error.success = false
+				throw error
+			}
 			next()
 		}
 	} catch (error) {

@@ -1,6 +1,6 @@
 import model from '../models'
 
-const { Partner, PartnerType, Address, Place } = model
+const { Partner, PartnerType, Address, Place, Car, CarModel, CarMake, CarType, Booking } = model
 
 const getPartners = async (req, res) => {
 	try {
@@ -38,8 +38,71 @@ const getPartners = async (req, res) => {
 	}
 }
 
+const getPartnerCars = async (req, res) => {
+	const { id } = req.params
+	try {
+		if (req.userId != id) {
+			const error = new Error('unauthorized')
+			error.code = 401
+			throw error
+		}
+		const cars = await Car.findAll({
+			attributes: ['id', 'plateNumber', 'year', 'transmission', 'driver'],
+			include: [
+				{
+					model: Partner,
+					as: 'partner',
+					attributes: [],
+					where: {
+						id
+					}
+				},
+				{
+					model: CarModel,
+					as: 'model',
+					attributes: ['name'],
+					include: [
+						{
+							model: CarMake,
+							as: 'make',
+							attributes: ['name'],
+						},
+						{
+							model: CarType,
+							as: 'carType',
+							attributes: ['name'],
+						},
+					]
+				}
+			]
+		})
+
+		const partnerCars = []
+
+		cars.forEach((car) => {
+			partnerCars.push({
+				mode: car.model.name,
+				make: car.model.make.name,
+				year: car.year,
+				plate: car.plateNumber,
+				type: car.model.carType.name,
+				transmission: car.transmission,
+				driver: car.driver,
+			})
+		})
+		res.status(200).send({
+			data: partnerCars
+		})
+	} catch (e) {
+		res.status(e.code || 500).send({
+			message: e.message,
+		})
+	}
+}
+
 const partnerController = {
 	getPartners,
+	getPartnerCars
 }
 
 export default partnerController

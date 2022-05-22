@@ -199,7 +199,6 @@ const getCarsNearby = async (req, res) => {
 		console.log(err)
 	}
 }
-
 const carController = {
 	getCars,
 	getCarsNearby,
