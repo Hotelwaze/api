@@ -50,13 +50,11 @@ export const isAdmin = async (req, res, next) => {
 
 			const roleExists = _.find(roles, (role) => role.name = 'admin')
 			if (roleExists === undefined) {
-				const error = new Error('Requires an admin role.')
-				error.code = 404
+				const error = new Error('unauthorized')
+				error.code = 401
 				error.success = false
 				throw error
 			}
-			console.log(user.id)
-			req.userId = user.id
 			next()
 		}
 	} catch (error) {
@@ -81,8 +79,8 @@ export const isPartner = async (req, res, next) => {
 
 			const roleExists = _.find(roles, (role) => role.name = 'partner_admin')
 			if (roleExists === undefined) {
-				const error = new Error('requires an admin role')
-				error.code = 404
+				const error = new Error('unauthorized')
+				error.code = 401
 				error.success = false
 				throw error
 			}
