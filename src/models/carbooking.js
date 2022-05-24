@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
 					placeableType: 'carBooking',
 				},
 			})
-		}
+		}us
 	}
 	CarBooking.init({
 		carId: {

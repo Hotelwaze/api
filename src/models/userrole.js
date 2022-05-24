@@ -3,13 +3,11 @@ const {
 } = require('sequelize')
 
 module.exports = (sequelize, DataTypes) => {
-	class UserRole extends Model {
-		static associate(models) {}
-	}
+	class UserRole extends Model {}
 	UserRole.init({}, {
 		sequelize,
 		modelName: 'UserRole',
-		tableName: 'user_role',
+		tableName: 'user_roles',
 	})
 	return UserRole
 }

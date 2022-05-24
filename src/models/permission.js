@@ -3,17 +3,14 @@ const {
 } = require('sequelize')
 
 module.exports = (sequelize, DataTypes) => {
-	class Role extends Model {
+	class Permission extends Model {
 		static associate(models) {
-			this.belongsToMany(models.User, {
-				through: 'user_roles',
-			})
-			this.belongsToMany(models.Permission, {
+			this.belongsToMany(models.Role, {
 				through: 'role_permissions',
 			})
 		}
 	}
-	Role.init({
+	Permission.init({
 		name: {
 			type: DataTypes.STRING,
 			allowNull: false,
@@ -27,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
 		},
 	}, {
 		sequelize,
-		modelName: 'Role',
+		modelName: 'Permission',
 	})
-	return Role
+	return Permission
 }

@@ -9,7 +9,7 @@ import path from 'path'
 import crypto from 'crypto'
 import { Op } from 'sequelize'
 
-const { User, RefreshToken, Partner } = model
+const { User, RefreshToken, Partner, Permission } = model
 
 const passwordReset = async (req, res) => {
 	try {
@@ -42,7 +42,7 @@ const passwordReset = async (req, res) => {
 	} catch (err) {
 		res.status(err.code || 500).send({
 			message: err.message,
-		})	
+		})
 	}
 }
 const passwordResetLinkCheck = async (req, res) => {
@@ -67,7 +67,7 @@ const passwordResetLinkCheck = async (req, res) => {
 	} catch (err) {
 		res.status(err.code || 500).send({
 			message: err.message,
-		})	
+		})
 	}
 }
 
@@ -83,7 +83,7 @@ const passwordResetRequest = async (req, res) => {
 				email
 			}
 		})
-	
+
 		if (user === null) {
 			return res.status(403).json({ message: `User with email ${email} does not exist.` })
 		} else {
@@ -93,7 +93,7 @@ const passwordResetRequest = async (req, res) => {
 				resetPasswordExpires: Date.now() + 3600000
 			})
 			user.save()
-	
+
 			const templateSource = fs.readFileSync(path.join(__dirname, '../../public/email/templates/password-reset-request.hbs'), 'utf8')
 			const template = handlebars.compile(templateSource)
 			const htmlToSend = template({
@@ -111,7 +111,7 @@ const passwordResetRequest = async (req, res) => {
 	} catch (err) {
 		res.status(err.code || 500).send({
 			message: err.message,
-		})	
+		})
 	}
 }
 
@@ -139,10 +139,109 @@ const refreshToken = async (req, res) => {
 
 		const user = await token.getUser()
 
-		user.getRoles().then((roles) => {
+		if (user) {
+			const roles = await user.getRoles()
+
+			if (roles) {
+				const authorities = []
+				for (let i = 0; i < roles.length; i += 1) {
+					authorities.push(roles[i].name)
+				}
+
+				const perms = []
+				const permissions = await Permission.findAll({
+					where: {
+						roleId: roles[0].id
+					}
+				})
+				for (let i = 0; i < permissions.length; i += 1) {
+					perms.push(permissions[i].name)
+				}
+
+				const accessToken = jwt.sign(
+					{
+						id: user.id,
+						email: user.email,
+						name: user.name,
+						firstName: user.firstName,
+						lastName: user.lastName,
+						mobile: user.mobile,
+						PartnerId: user.PartnerId,
+						roles: authorities,
+						permissions: perms,
+					},
+					authConfig.secret, {
+						expiresIn: Number(authConfig.jwtExpiration),
+					},
+				)
+
+				return res.status(200).json({
+					accessToken: accessToken,
+					refreshToken: token.token,
+				})
+			}
+		}
+
+	} catch (err) {
+		console.log(err)
+		return res.status(500).send({ message: err })
+	}
+}
+
+const login = async (req, res) => {
+	const { email, password } = req.body
+
+	try {
+		if (email === null) {
+			const error = new Error('Email is required.')
+			error.code = 403
+			throw error
+		}
+
+		if (password === null) {
+			const error = new Error('Password is required.')
+			error.code = 403
+			throw error
+		}
+
+		const user = await User.findOne({
+			where: {
+				email,
+			},
+		})
+
+		if (!user) {
+			const error = new Error('Your email and/or password is incorrect.')
+			error.code = 403
+			throw error
+		}
+
+		const passwordIsValid = bcrypt.compareSync(
+			password,
+			user.password,
+		)
+
+		if (!passwordIsValid) {
+			const error = new Error('Your email and/or password is incorrect.')
+			error.code = 403
+			throw error
+		}
+
+		const roles = user.getRoles()
+		if (roles) {
 			const authorities = []
 			for (let i = 0; i < roles.length; i += 1) {
 				authorities.push(roles[i].name)
+			}
+
+			const perms = []
+			const permissions = await Permission.findAll({
+				where: {
+					roleId: roles[0].id
+				}
+			})
+			for (let i = 0; i < permissions.length; i += 1) {
+				perms.push(permissions[i].name)
 			}
 
 			const accessToken = jwt.sign(
@@ -154,21 +253,30 @@ const refreshToken = async (req, res) => {
 					lastName: user.lastName,
 					mobile: user.mobile,
 					PartnerId: user.PartnerId,
-					roles: authorities
+					roles: authorities,
+					permissions: perms
 				},
 				authConfig.secret, {
 					expiresIn: Number(authConfig.jwtExpiration),
 				},
 			)
 
-			return res.status(200).json({
-				accessToken: accessToken,
-				refreshToken: token.token,
-			})
-		})
+			const refreshToken = RefreshToken.createToken(user)
+
+			if (refreshToken) {
+				res.status(200).send({
+					message: 'Login successful',
+					data: {
+						user: accessToken,
+						refreshToken: refreshToken,
+					},
+				})
+			}
+		}
 	} catch (err) {
-		console.log(err)
-		return res.status(500).send({ message: err })
+		res.status(err.code || 500).send({
+			message: err.message,
+		})
 	}
 }
 
@@ -216,7 +324,9 @@ const customerLogin = async (req, res) => {
 			for (let i = 0; i < roles.length; i += 1) {
 				authorities.push(roles[i].name)
 			}
-			
+
+
+
 			if (!authorities.includes('customer')) {
 				const error = new Error('Different account type. Access is not allowed.')
 				error.code = 403
@@ -322,7 +432,7 @@ const partnerLogin = async (req, res) => {
 			for (let i = 0; i < roles.length; i += 1) {
 				authorities.push(roles[i].name)
 			}
-			
+
 			if (!authorities.includes('partner_admin', 'partner_driver')) {
 				const error = new Error('Different account type. Access is not allowed.')
 				error.code = 403
@@ -451,7 +561,7 @@ const createCustomer = async (req, res) => {
 					console.log(err)
 					res.status(err.code || 500).send({
 						message: err.message,
-					})		
+					})
 				})
 		})
 	} catch (err) {
@@ -590,7 +700,7 @@ const createPartnerUser = async (req, res) => {
 				for (let i = 0; i < roles.length; i += 1) {
 					authorities.push(roles[i].name)
 				}
-				
+
 				res.status(200).send({
 					message: 'New user was sucessfully added.',
 				})
