@@ -34,18 +34,6 @@ const authRoutes = (app) => {
 		authController.createAdminUser,
 	)
 
-	app.post('/auth/customer-login', authController.customerLogin)
-
-	app.post('/auth/partner-login', authController.partnerLogin)
-
-	app.post('/auth/refresh-token', authController.refreshToken)
-
-	app.post('/auth/request-password-reset', authController.passwordResetRequest)
-
-	app.get('/auth/password-reset-link-check', authController.passwordResetLinkCheck)
-
-	app.post('/auth/password-reset', authController.passwordReset)
-
 	app.post('/auth/login', authController.login)
 }
 
