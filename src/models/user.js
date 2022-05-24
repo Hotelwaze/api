@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
 				as: 'account',
 			})
 			this.belongsToMany(models.Role, {
-				through: 'user_role',
+				through: 'userRoles',
 			})
 			this.hasOne(models.RefreshToken, {
 				foreignKey: 'UserId',
@@ -65,9 +65,13 @@ module.exports = (sequelize, DataTypes) => {
 		updatedAt: {
 			type: DataTypes.DATE,
 		},
+		deletedAt: {
+			type: DataTypes.DATE,
+		},
 	}, {
 		sequelize,
 		modelName: 'User',
+		paranoid: true
 	})
 	return User
 }

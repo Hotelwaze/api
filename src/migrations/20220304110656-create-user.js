@@ -47,6 +47,9 @@ module.exports = {
 				defaultValue: Sequelize.literal('NOW()'),
 				onUpdate: Sequelize.literal('NOW()'),
 			},
+			deleteAt: {
+				type: Sequelize.DATE,
+			},
 		})
 	},
 	down: async (queryInterface) => {

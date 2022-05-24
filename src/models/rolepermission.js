@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
 	RolePermission.init({}, {
 		sequelize,
 		modelName: 'RolePermission',
-		tableName: 'role_permissions',
+		tableName: 'rolePermissions',
 	})
 	return RolePermission
 }

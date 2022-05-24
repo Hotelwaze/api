@@ -19,6 +19,7 @@ import feeRoutes from './routes/fee.routes'
 import authRoutes from './routes/auth.routes'
 import bookingRoutes from './routes/booking.routes'
 import listenerRoutes from './routes/listener.routes'
+import userRoutes from './routes/user.routes'
 
 dotenv.config()
 
@@ -73,8 +74,9 @@ carModelRoutes(app)
 carRoutes(app)
 feeRoutes(app)
 authRoutes(app)
-bookingRoutes(app)
+// bookingRoutes(app)
 listenerRoutes(app)
+userRoutes(app)
 
 app.use((req, res) => {
 	res.status(404).send('404: Page not found')

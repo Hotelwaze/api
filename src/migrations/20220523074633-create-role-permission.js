@@ -1,27 +1,34 @@
-'use strict';
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('RolePermissions', {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER
-      },
-      name: {
-        type: Sequelize.STRING
-      },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      }
-    });
-  },
-  async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('RolePermissions');
-  }
-};
+	up: async (queryInterface, Sequelize) => {
+		await queryInterface.createTable('rolePermissions', {
+			id: {
+				allowNull: false,
+				autoIncrement: true,
+				primaryKey: true,
+				type: Sequelize.INTEGER.UNSIGNED,
+			},
+			userId: {
+				type: Sequelize.INTEGER,
+				allowNull: false,
+			},
+			roleId: {
+				type: Sequelize.INTEGER,
+				allowNull: false,
+			},
+			createdAt: {
+				allowNull: false,
+				type: Sequelize.DATE,
+				defaultValue: Sequelize.literal('NOW()'),
+			},
+			updatedAt: {
+				allowNull: false,
+				type: Sequelize.DATE,
+				defaultValue: Sequelize.literal('NOW()'),
+				onUpdate: Sequelize.literal('NOW()'),
+			},
+		})
+	},
+	down: async (queryInterface) => {
+		await queryInterface.dropTable('rolePermissions')
+	},
+}
