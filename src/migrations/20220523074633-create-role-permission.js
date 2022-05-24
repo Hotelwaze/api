@@ -7,11 +7,11 @@ module.exports = {
 				primaryKey: true,
 				type: Sequelize.INTEGER.UNSIGNED,
 			},
-			userId: {
+			roleId: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
 			},
-			roleId: {
+			permissionId: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
 			},

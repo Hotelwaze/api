@@ -1,6 +1,7 @@
+import { Op } from 'sequelize'
 import model from '../models'
 
-const { Role } = model
+const { Role, Permission } = model
 
 const getRoles = async (req, res) => {
 	try {
@@ -15,7 +16,7 @@ const getRoles = async (req, res) => {
 	}
 }
 
-const create = async (req, res) => {
+const createRole = async (req, res) => {
 	const { name } = req.body
 
 	try {
@@ -51,9 +52,84 @@ const create = async (req, res) => {
 	}
 }
 
+const addPermissions = async (req, res) => {
+	const { id: roleId } = req.params
+	const { permissions } = req.body
+
+	try {
+		if (!permissions) {
+			const error = new Error('permissions not provided')
+			error.code = 401
+			throw error
+		}
+
+		const args = []
+		permissions.forEach((permission) => {
+			args.push({
+				name: permission
+			})
+		})
+
+		await model.sequelize.transaction(async (t) => {
+			const availablePermissions = await Permission.findAll({
+				where: {
+					name: {
+						[Op.or]: permissions
+					}
+				}
+			}, { transaction: t })
+
+			if (availablePermissions.length == 0) {
+				const error = new Error('permissions not found')
+				error.code = 401
+				throw error
+			}
+
+			const permissionsIds = []
+			availablePermissions.forEach((perm) => {
+				permissionsIds.push(perm.id)
+			})
+
+			const role = await Role.findOne({
+				where: {
+					id: roleId
+				}
+			}, { transaction: t })
+
+			if (!role) {
+				const error = new Error('role not found')
+				error.code = 401
+				throw error
+			}
+
+			const result = await role.addPermissions(permissionsIds, { transaction: t })
+
+			if (!result) {
+				const error = new Error('failed to add permissions to role')
+				error.code = 403
+				throw error
+			}
+
+			res.status(200).send({
+				message: 'permissions successfully added to role',
+				data: {
+					role,
+					result
+				},
+			})
+		})
+	} catch (e) {
+		console.log(e)
+		res.status(e.code || 500).send({
+			message: e.message,
+		})
+	}
+}
+
 const roleController = {
 	getRoles,
-	create
+	createRole,
+	addPermissions
 }
 
 export default roleController

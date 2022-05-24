@@ -17,9 +17,10 @@ import carModelRoutes from './routes/car-model.routes'
 import carRoutes from './routes/car.routes'
 import feeRoutes from './routes/fee.routes'
 import authRoutes from './routes/auth.routes'
-import bookingRoutes from './routes/booking.routes'
+// import bookingRoutes from './routes/booking.routes'
 import listenerRoutes from './routes/listener.routes'
 import userRoutes from './routes/user.routes'
+import permissionRoutes from './routes/permission.routes'
 
 dotenv.config()
 
@@ -64,6 +65,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }))
 app.use('/images', express.static(path.join(__dirname, '../public/images')))
 
 roleRoutes(app)
+permissionRoutes(app)
 partnerTypeRoutes(app)
 partnerRoutes(app)
 addressRoutes(app)
