@@ -47,7 +47,7 @@ module.exports = {
 				defaultValue: Sequelize.literal('NOW()'),
 				onUpdate: Sequelize.literal('NOW()'),
 			},
-			deleteAt: {
+			deletedAt: {
 				type: Sequelize.DATE,
 			},
 		})

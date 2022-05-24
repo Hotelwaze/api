@@ -45,6 +45,8 @@ const authRoutes = (app) => {
 	app.get('/auth/password-reset-link-check', authController.passwordResetLinkCheck)
 
 	app.post('/auth/password-reset', authController.passwordReset)
+
+	app.post('/auth/login', authController.login)
 }
 
 export default authRoutes

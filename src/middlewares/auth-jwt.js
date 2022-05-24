@@ -26,7 +26,7 @@ export const verifyToken = async (req, res, next) => {
 				message: err.message,
 			})
 		}
-		req.user = decoded.user
+		req.user = decoded
 		next()
 	})
 }

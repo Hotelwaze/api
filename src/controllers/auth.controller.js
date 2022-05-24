@@ -192,14 +192,14 @@ const login = async (req, res) => {
 	const { email, password } = req.body
 
 	try {
-		if (email === null) {
-			const error = new Error('Email is required.')
+		if (!email) {
+			const error = new Error('email is not provided')
 			error.code = 403
 			throw error
 		}
 
-		if (password === null) {
-			const error = new Error('Password is required.')
+		if (!password) {
+			const error = new Error('password is not provided')
 			error.code = 403
 			throw error
 		}
@@ -211,7 +211,7 @@ const login = async (req, res) => {
 		})
 
 		if (!user) {
-			const error = new Error('Your email and/or password is incorrect.')
+			const error = new Error('user not found')
 			error.code = 403
 			throw error
 		}
@@ -222,26 +222,16 @@ const login = async (req, res) => {
 		)
 
 		if (!passwordIsValid) {
-			const error = new Error('Your email and/or password is incorrect.')
+			const error = new Error('password is invalid')
 			error.code = 403
 			throw error
 		}
 
-		const roles = user.getRoles()
+		const roles = await user.getRoles()
 		if (roles) {
 			const authorities = []
 			for (let i = 0; i < roles.length; i += 1) {
 				authorities.push(roles[i].name)
-			}
-
-			const perms = []
-			const permissions = await Permission.findAll({
-				where: {
-					roleId: roles[0].id
-				}
-			})
-			for (let i = 0; i < permissions.length; i += 1) {
-				perms.push(permissions[i].name)
 			}
 
 			const accessToken = jwt.sign(
@@ -253,8 +243,7 @@ const login = async (req, res) => {
 					lastName: user.lastName,
 					mobile: user.mobile,
 					PartnerId: user.PartnerId,
-					roles: authorities,
-					permissions: perms
+					roles: authorities
 				},
 				authConfig.secret, {
 					expiresIn: Number(authConfig.jwtExpiration),
@@ -724,4 +713,5 @@ export default {
 	createCustomer,
 	createAdminUser,
 	createPartnerUser,
+	login
 }

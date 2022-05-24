@@ -1,5 +1,6 @@
 import common from '../helpers/common'
 import model from '../models'
+import bcrypt from 'bcrypt'
 
 const { User, Role } = model
 
@@ -49,7 +50,7 @@ const create = async (req, res) => {
 			firstName,
 			lastName,
 			email,
-			password
+			password: bcrypt.hashSync(password, 11)
 		}
 
 		if (mobile) {
@@ -67,30 +68,26 @@ const create = async (req, res) => {
 				await user.setRoles([fetchedRole.id], { transaction: t })
 				const roles = await user.getRoles({ transaction: t })
 
-				if (roles.length == 0) {
-					const error = new Error('no roles found')
-					error.code = 403
-					throw error
-				}
+				if (roles && roles.length > 0) {
+					const authorities = []
+					for (let i = 0; i < roles.length; i += 1) {
+						authorities.push(roles[i].name)
+					}
 
-				const authorities = []
-				for (let i = 0; i < roles.length; i += 1) {
-					authorities.push(roles[i].name)
+					res.status(200).send({
+						message: 'user create successful',
+						data: {
+							user: {
+								id: user.id,
+								email: user.email,
+								name: user.name,
+								firstName: user.firstName,
+								lastName: user.lastName,
+								roles: authorities,
+							}
+						},
+					})
 				}
-
-				res.status(200).send({
-					message: 'user create successful',
-					data: {
-						user: {
-							id: user.id,
-							email: user.email,
-							name: user.name,
-							firstName: user.firstName,
-							lastName: user.lastName,
-							roles: authorities,
-						}
-					},
-				})
 			}
 		})
 
