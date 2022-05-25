@@ -38,10 +38,9 @@ const getPartners = async (req, res) => {
 	}
 }
 
-const getPartnerCars = async (req, res) => {
+const getCars = async (req, res) => {
 	const { id } = req.params
 	try {
-		console.log(req.user)
 		if ((req.user.permissions.includes('car.list') && req.user.id == id) || req.user.role.includes('admin')) {
 			const cars = await Car.findAll({
 				attributes: ['id', 'plateNumber', 'year', 'transmission', 'driver'],
@@ -102,9 +101,21 @@ const getPartnerCars = async (req, res) => {
 	}
 }
 
+const addCar = async (req, res) => {
+	const { id } = req.params
+	const { make, model, year, plate, driver } = req.body
+	
+	try {
+		
+	} catch (e) {
+		
+	}
+}
+
 const partnerController = {
 	getPartners,
-	getPartnerCars
+	addCar,
+	getCars
 }
 
 export default partnerController

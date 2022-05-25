@@ -6,7 +6,12 @@ const partnerRoutes = (app) => {
 	app.get(
 		'/partners/:id/cars',
 		[verifyToken],
-		partnerController.getPartnerCars
+		partnerController.getCars
+	)
+	app.post(
+		'/partners/id/cars',
+		[verifyToken],
+		partnerController.addCar
 	)
 }
 
