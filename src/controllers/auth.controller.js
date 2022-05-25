@@ -9,7 +9,7 @@ import path from 'path'
 import crypto from 'crypto'
 import { Op } from 'sequelize'
 
-const { User, RefreshToken, Permission } = model
+const { User, RefreshToken, Role } = model
 
 const passwordReset = async (req, res) => {
 	try {
@@ -148,6 +148,18 @@ const refreshToken = async (req, res) => {
 					authorities.push(roles[i].name)
 				}
 
+				const perms = []
+				const currentRole = await Role.findOne({
+					where: {
+						id: roles[0].id
+					}
+				})
+
+				const permissions = await currentRole.getPermissions()
+				for (let i = 0; i < permissions.length; i += 1) {
+					perms.push(permissions[i].name)
+				}
+
 				const accessToken = jwt.sign(
 					{
 						id: user.id,
@@ -157,7 +169,8 @@ const refreshToken = async (req, res) => {
 						lastName: user.lastName,
 						mobile: user.mobile,
 						PartnerId: user.PartnerId,
-						roles: authorities
+						roles: authorities,
+						permissions: perms
 					},
 					authConfig.secret, {
 						expiresIn: Number(authConfig.jwtExpiration),
@@ -165,7 +178,7 @@ const refreshToken = async (req, res) => {
 				)
 
 				return res.status(200).json({
-					accessToken: accessToken,
+					user: accessToken,
 					refreshToken: token.token,
 				})
 			}
@@ -223,6 +236,18 @@ const login = async (req, res) => {
 				authorities.push(roles[i].name)
 			}
 
+			const perms = []
+			const currentRole = await Role.findOne({
+				where: {
+					id: roles[0].id
+				}
+			})
+
+			const permissions = await currentRole.getPermissions()
+			for (let i = 0; i < permissions.length; i += 1) {
+				perms.push(permissions[i].name)
+			}
+
 			const accessToken = jwt.sign(
 				{
 					id: user.id,
@@ -232,7 +257,8 @@ const login = async (req, res) => {
 					lastName: user.lastName,
 					mobile: user.mobile,
 					PartnerId: user.PartnerId,
-					roles: authorities
+					roles: authorities,
+					permissions: perms
 				},
 				authConfig.secret, {
 					expiresIn: Number(authConfig.jwtExpiration),

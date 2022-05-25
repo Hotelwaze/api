@@ -1,5 +1,4 @@
 import model from '../models'
-import common from '../helpers/common'
 
 const { Partner, PartnerType, Address, Place, Car, CarModel, CarMake, CarType, Booking } = model
 
@@ -42,8 +41,8 @@ const getPartners = async (req, res) => {
 const getPartnerCars = async (req, res) => {
 	const { id } = req.params
 	try {
-		// check if 'car.list' is in the user's list of permissions
-		if (req.user.permissions.includes('car.list') || req.user.role.includes('admin')) {
+		console.log(req.user)
+		if ((req.user.permissions.includes('car.list') && req.user.id == id) || req.user.role.includes('admin')) {
 			const cars = await Car.findAll({
 				attributes: ['id', 'plateNumber', 'year', 'transmission', 'driver'],
 				include: [
