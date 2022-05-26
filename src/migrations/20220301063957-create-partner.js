@@ -30,15 +30,13 @@ module.exports = {
 				allowNull: false,
 			},
 			status: {
-				driver: {
-					type: Sequelize.ENUM([
-						'active',
-						'pending',
-						'cancelled',
-						'suspended'
-					]),
-					allowNull: false,
-				},
+				type: Sequelize.ENUM([
+					'active',
+					'pending',
+					'cancelled',
+					'suspended'
+				]),
+				allowNull: false,
 			},
 			createdAt: {
 				allowNull: false,
