@@ -48,9 +48,10 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		status: {
 			type: DataTypes.ENUM([
+				'active',
 				'pending',
-				'blocked',
-				'active'
+				'cancelled',
+				'suspended'
 			]),
 		},
 		resetPasswordToken: {

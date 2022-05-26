@@ -31,9 +31,10 @@ module.exports = {
 			},
 			status: {
 				type: Sequelize.ENUM([
+					'active',
 					'pending',
-					'blocked',
-					'active'
+					'cancelled',
+					'suspended'
 				]),
 			},
 			createdAt: {

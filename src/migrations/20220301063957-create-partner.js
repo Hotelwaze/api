@@ -30,9 +30,15 @@ module.exports = {
 				allowNull: false,
 			},
 			status: {
-				type: Sequelize.STRING,
-				allowNull: false,
-				defaultValue: 'pending',
+				driver: {
+					type: Sequelize.ENUM([
+						'active',
+						'pending',
+						'cancelled',
+						'suspended'
+					]),
+					allowNull: false,
+				},
 			},
 			createdAt: {
 				allowNull: false,
@@ -44,6 +50,9 @@ module.exports = {
 				type: Sequelize.DATE,
 				defaultValue: Sequelize.literal('NOW()'),
 				onUpdate: Sequelize.literal('NOW()'),
+			},
+			deletedAt: {
+				type: Sequelize.DATE,
 			},
 		})
 	},

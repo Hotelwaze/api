@@ -56,9 +56,13 @@ module.exports = (sequelize, DataTypes) => {
 			allowNull: false,
 		},
 		status: {
-			type: DataTypes.STRING,
+			type: DataTypes.ENUM([
+				'active',
+				'pending',
+				'cancelled',
+				'suspended'
+			]),
 			allowNull: false,
-			defaultValue: 'pending',
 		},
 		createdAt: {
 			type: 'TIMESTAMP',
@@ -66,9 +70,13 @@ module.exports = (sequelize, DataTypes) => {
 		updatedAt: {
 			type: DataTypes.DATE,
 		},
+		deletedAt: {
+			type: DataTypes.DATE,
+		},
 	}, {
 		sequelize,
 		modelName: 'Partner',
+		paranoid: true
 	})
 	return Partner
 }
