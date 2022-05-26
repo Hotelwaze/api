@@ -9,7 +9,7 @@ const create = async (req, res) => {
 	try {
 		if (!common.checkRole(req.user.roles, 'admin')) {
 			const error = new Error('unauthorized')
-			error.code = 403
+			error.code = 401
 			throw error
 		}
 
