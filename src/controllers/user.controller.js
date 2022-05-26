@@ -31,37 +31,37 @@ const create = async (req, res) => {
 			throw error
 		}
 
-		const fetchedRole = await Role.findOne({
-			where: {
-				name: role
-			}
-		})
-
-		if (!fetchedRole) {
-			const error = new Error('role does not exist')
-			error.code = 403
-			throw error
-		}
-
-		const [firstName, lastName] = name.split(' ')
-
-		const args = {
-			name,
-			firstName,
-			lastName,
-			email,
-			password: bcrypt.hashSync(password, 11)
-		}
-
-		if (mobile) {
-			args.mobile = mobile
-		}
-
-		if (partnerId) {
-			args.PartnerId = partnerId
-		}
-
 		await model.sequelize.transaction(async (t) => {
+			const fetchedRole = await Role.findOne({
+				where: {
+					name: role
+				}
+			})
+
+			if (!fetchedRole) {
+				const error = new Error('role does not exist')
+				error.code = 403
+				throw error
+			}
+
+			const [firstName, lastName] = name.split(' ')
+
+			const args = {
+				name,
+				firstName,
+				lastName,
+				email,
+				password: bcrypt.hashSync(password, 11)
+			}
+
+			if (mobile) {
+				args.mobile = mobile
+			}
+
+			if (partnerId) {
+				args.PartnerId = partnerId
+			}
+
 			const user = await User.create(args, { transaction: t })
 
 			if (user) {

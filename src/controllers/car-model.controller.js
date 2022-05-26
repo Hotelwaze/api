@@ -44,8 +44,8 @@ const add = async (req, res) => {
 
 		const args = {
 			name,
-			carMake,
-			carType
+			CarMakeId: carMake,
+			CarTypeId: carType
 		}
 
 		if (description) {

@@ -28,14 +28,11 @@ module.exports = (sequelize, DataTypes) => {
 			type: DataTypes.STRING,
 		},
 		transmission: {
-			type: DataTypes.STRING(2),
+			type: DataTypes.ENUM('MT', 'AT'),
 			allowNull: false,
-			defaultValue: 'MT'
 		},
 		driver: {
-			type: DataTypes.STRING,
-			allowNull: false,
-			defaultValue: 'optional'
+			type: DataTypes.ENUM('required', 'optional')
 		},
 		PartnerId: {
 			type: DataTypes.INTEGER,

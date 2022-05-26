@@ -16,14 +16,12 @@ module.exports = {
 				allowNull: false,
 			},
 			transmission: {
-				type: Sequelize.STRING(2),
+				type: Sequelize.ENUM('AT', 'MT'),
 				allowNull: false,
-				defaultValue: 'MT'
 			},
 			driver: {
-				type: Sequelize.STRING,
+				type: Sequelize.ENUM('included', 'optional'),
 				allowNull: false,
-				defaultValue: 'optional'
 			},
 			createdAt: {
 				allowNull: false,
