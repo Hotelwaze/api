@@ -2,37 +2,95 @@ import model from '../models'
 
 const { Fee } = model
 
-const findFee = async (req, res) => {
-	const { name } = req.query
+const save = async (req, res) => {
+	const { name, type, value } = req.body
 
 	try {
-		const args = {}
+		if (!req.user.roles.includes('admin')) {
+			const error = new Error('unauthorized')
+			error.code = 401
+			throw error
+		}
 
-		if (name !== null && name !== '') {
-			args.where = {
-				name,
-			}
-		} else {
-			const error = new Error('Name is required.')
+		if (!name) {
+			const error = new Error('name is not provided')
 			error.code = 403
 			throw error
 		}
 
-		const fee = await Fee.findOne(args)
+		if (!type) {
+			const error = new Error('type is not provided')
+			error.code = 403
+			throw error
+		}
+		if (!value) {
+			const error = new Error('value is not provided')
+			error.code = 403
+			throw error
+		}
+
+		const fee = await Fee.create({
+			name,
+			type,
+			value
+		})
+
+		if (!fee) {
+			const error = new Error('fee create failed')
+			error.code = 400
+			throw error
+		}
 
 		res.status(200).send({
-			message: 'Query successful',
+			message: 'Fee create successful',
 			data: fee,
 		})
-	} catch (err) {
-		res.status(err.code || 500).send({
-			success: err.success,
-			message: err.message,
+	} catch (e) {
+		res.status(e.code || 500).send({
+			success: e.success,
+			message: e.message,
+		})
+	}
+}
+
+const findFee = async (req, res) => {
+	const { name } = req.query
+
+	try {
+		if (!name) {
+			const error = new Error('name is not provided')
+			error.code = 403
+			throw error
+		}
+
+		const fee = await Fee.findOne({
+			where: {
+				name
+			},
+			attributes: ['name', 'type', 'value']
+		})
+
+		if (!fee) {
+			const error = new Error('fee fetch error')
+			error.code = 403
+			throw error
+		}
+
+
+		res.status(200).send({
+			message: 'Fee fetch successful',
+			data: fee,
+		})
+	} catch (e) {
+		res.status(e.code || 500).send({
+			success: e.success,
+			message: e.message,
 		})
 	}
 }
 
 const optionController = {
+	save,
 	findFee,
 }
 

@@ -2,7 +2,7 @@ import model from '../models'
 import bcrypt from 'bcrypt'
 import common from '../helpers/common'
 
-const { Partner, PartnerType, Address, Place, Car, CarModel, CarMake, CarType, Role, User } = model
+const { Partner, PartnerType, Address, Place, Car, CarModel, CarMake, CarType, Role, User, Fee } = model
 
 const getPartners = async (req, res) => {
 	try {
@@ -246,12 +246,24 @@ const getCars = async (req, res) => {
 						{
 							model: CarType,
 							as: 'carType',
-							attributes: ['name'],
+							attributes: ['name', 'pricePerDay'],
 						},
 					]
 				}
 			]
 		})
+
+		const driverFee = await Fee.findOne({
+			where: {
+				name: 'driver_fee'
+			}
+		})
+
+		if (!driverFee) {
+			const error = new Error('driver fee fetch error')
+			error.code = 403
+			throw error
+		}
 
 		const partnerCars = []
 
@@ -265,6 +277,8 @@ const getCars = async (req, res) => {
 				type: car.model.carType.name,
 				transmission: car.transmission,
 				driver: car.driver,
+				pricePerDay: car.model.carType.pricePerDay,
+				driverFee: driverFee.value
 			})
 		})
 
