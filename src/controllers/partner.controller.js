@@ -199,7 +199,24 @@ const savePartner = async (req, res) => {
 const getCars = async (req, res) => {
 	const { id } = req.params
 	try {
-		if ((!req.user.permissions.includes('car.list') && req.user.id !== id) || req.user.role.includes('admin')) {
+		const users = await User.findAll({
+			where: {
+				PartnerId: id
+			}
+		})
+
+		if (!users && users.length == 0) {
+			const error = new Error('partner account has no users')
+			error.code = 403
+			throw error
+		}
+
+		const partnerUsers = []
+		for (let i = 0; i < users.length; i += 1) {
+			partnerUsers.push(users[i].id)
+		}
+
+		if (!(req.user.permissions.includes('car.list') && partnerUsers.includes(req.user.id)) || req.user.roles.includes('admin')) {
 			const error = new Error('Unauthorized')
 			error.code = 401
 			throw error
@@ -240,7 +257,8 @@ const getCars = async (req, res) => {
 
 		cars.forEach((car) => {
 			partnerCars.push({
-				mode: car.model.name,
+				id: car.id,
+				model: car.model.name,
 				make: car.model.make.name,
 				year: car.year,
 				plate: car.plateNumber,
@@ -249,7 +267,9 @@ const getCars = async (req, res) => {
 				driver: car.driver,
 			})
 		})
+
 		res.status(200).send({
+			message: 'partner cars fetched successfully',
 			data: partnerCars
 		})
 	} catch (e) {
@@ -265,7 +285,6 @@ const saveCar = async (req, res) => {
 	const { PartnerId } = req.user
 
 	try {
-		console.log(req.user.roles.includes('admin'))
 		if (!(req.user.permissions.includes('car.save') && req.user.id == id) || req.user.roles.includes('admin')) {
 			const error = new Error('Unauthorized')
 			error.code = 401
