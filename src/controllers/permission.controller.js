@@ -1,5 +1,4 @@
 import model from '../models'
-import common from '../helpers/common'
 
 const { Permission } = model
 
@@ -7,7 +6,7 @@ const create = async (req, res) => {
 	const { name } = req.body
 
 	try {
-		if (!common.checkRole(req.user.roles, 'admin')) {
+		if (!req.user.roles.includes('admin')) {
 			const error = new Error('unauthorized')
 			error.code = 401
 			throw error

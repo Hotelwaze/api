@@ -82,6 +82,12 @@ const savePartner = async (req, res) => {
 			throw error
 		}
 
+		if (!partnerType) {
+			const error = new Error('partner type id is not provided')
+			error.code = 403
+			throw error
+		}
+
 		const args = {
 			name: partnerName,
 			phone,
@@ -153,7 +159,8 @@ const savePartner = async (req, res) => {
 				name: username,
 				firstName,
 				lastName,
-				email,
+				email: userEmail,
+				mobile,
 				password: bcrypt.hashSync(password, 11),
 				PartnerId: partner.id
 			}
@@ -166,28 +173,21 @@ const savePartner = async (req, res) => {
 
 			if (user) {
 				await user.setRoles([fetchedRole.id], { transaction: t })
-				const roles = await user.getRoles()
 
-				if (roles && roles.length > 0) {
-					const authorities = []
-					for (let i = 0; i < roles.length; i += 1) {
-						authorities.push(roles[i].name)
-					}
+				res.status(200).send({
+					message: 'partner with user create successful',
+					data: {
+						user: {
+							id: user.id,
+							email: user.email,
+							name: user.name,
+							firstName: user.firstName,
+							lastName: user.lastName,
+							account: partner
+						}
+					},
+				})
 
-					res.status(200).send({
-						message: 'user create successful',
-						data: {
-							user: {
-								id: user.id,
-								email: user.email,
-								name: user.name,
-								firstName: user.firstName,
-								lastName: user.lastName,
-								account: partner
-							}
-						},
-					})
-				}
 			}
 		})
 	} catch (e) {
@@ -262,6 +262,7 @@ const getCars = async (req, res) => {
 const saveCar = async (req, res) => {
 	const { id } = req.params
 	const { model, year, plate, driver, transmission } = req.body
+	const { PartnerId } = req.user
 
 	try {
 		console.log(req.user.roles.includes('admin'))
@@ -302,7 +303,7 @@ const saveCar = async (req, res) => {
 		}
 
 		const car = await Car.create({
-			PartnerId: id,
+			PartnerId,
 			CarModelId: model,
 			plateNumber: plate,
 			transmission,
