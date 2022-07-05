@@ -12,6 +12,20 @@ const carRoutes = (app) => {
     [
       verifyToken
     ], carController.addPartnersCars)
+  app.post('/cars/info',
+    [
+      verifyToken
+    ], carController.getCarInfo);
+
+  app.post('/cars/delete',
+    [
+      verifyToken
+    ], carController.deleteCar)
+
+  app.post('/cars/update',
+    [
+      verifyToken
+    ], carController.updateCar)
 }
 
 export default carRoutes

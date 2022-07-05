@@ -30,7 +30,8 @@ export const verifyToken = async (req, res, next) => {
 				message: err.message,
 			})
 		}
-		req.userId = decoded.id
+
+		req.userId = decoded?.user?.id
 		next()
 	})
 }

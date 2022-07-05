@@ -7,21 +7,24 @@ const {Car, Place, Partner, Booking, CarModel, CarMake, CarType, Image, User} = 
 
 const getPartnersCars = async (req, res) => {
 
+  const {userId} = req;
+  console.log(req, '@@')
+
   const user = await User.findOne({
     where: {
-      id: req.userId,
+      id: userId,
     },
   })
 
-  if(user.PartnerId === null){
+  if (user.PartnerId === null) {
     res.status(400).send({
       message: 'not a partner account'
-    })
+    });
   }
 
   try {
     const cars = await Car.findAndCountAll({
-      where: {PartnerId : user.PartnerId },
+      where: {PartnerId: user.PartnerId},
       attributes: ['id', 'plateNumber', 'year', 'transmission', 'driver'],
       include: [
         {
@@ -41,6 +44,57 @@ const getPartnersCars = async (req, res) => {
     })
   } catch (err) {
     console.log(err)
+    res.status(400).send({
+      message: 'bank '
+    })
+  }
+}
+
+const getCarInfo = async (req, res) => {
+
+  const {userId} = req;
+
+  const {id} = req.body.data
+
+  const user = await User.findOne({
+    where: {
+      id: userId,
+    },
+  })
+
+  if (user.PartnerId === null) {
+    res.status(400).send({
+      message: 'not a partner account'
+    });
+  }
+
+  try {
+    const car = await Car.findOne({
+      where: {id: id},
+      attributes: ['id', 'plateNumber', 'year', 'transmission', 'driver'],
+      include: [
+        {
+          model: CarModel,
+          as: 'model',
+          include: [
+            {
+              model: Image,
+              as: 'images'
+            }
+          ]
+        }
+      ]
+    })
+
+    res.status(200).send({
+      car
+    })
+
+  } catch (err) {
+    console.log(err)
+    res.status(400).send({
+      message: err
+    })
   }
 }
 
@@ -56,7 +110,7 @@ const addPartnersCars = async (req, res) => {
     },
   })
 
-  if(user.PartnerId === null){
+  if (user.PartnerId === null) {
     res.status(400).send({
       message: 'not a partner account'
     })
@@ -66,13 +120,16 @@ const addPartnersCars = async (req, res) => {
     const cars = await Car.create({
       ...data,
       PartnerId: user.PartnerId,
-    },);
+    });
 
     res.status(200).send({
       cars
     })
   } catch (err) {
     console.log(err)
+    res.status(400).send({
+      message: err
+    })
   }
 }
 
@@ -247,7 +304,7 @@ const getCarsNearby = async (req, res) => {
           partnerId: item.partner.id,
           partnerName: item.partner.name,
           carMakeName: group[key][0].model.make.name,
-          image: group[key][0].model.images[0].file,
+          image: group[key][0]?.model?.images[0]?.file,
           carModelName: group[key][0].model.name,
           carTypeId: group[key][0].model.carType.id,
           carTypeName: group[key][0].model.carType.name,
@@ -271,11 +328,61 @@ const getCarsNearby = async (req, res) => {
   }
 }
 
+const deleteCar = async (req, res) => {
+
+  try {
+    const {id} = req.body.data
+
+    await Car.destroy({
+      where: {
+        id
+      }
+    });
+
+    res.status(200).send({
+      success: true,
+      message: 'deleted'
+    })
+  } catch (e) {
+    res.status(400).send({
+      success: false,
+      message: 'deleted'
+    })
+  }
+}
+
+const updateCar = async (req, res) => {
+
+  try {
+
+    const {id} = req.body.data
+
+    console.log(req.body.data);
+
+    await Car.update({...req.body.data}, {where: {id}});
+
+    res.status(200).send({
+      success: true,
+      message: 'updated'
+    })
+
+  } catch (e) {
+    console.log(e)
+    res.status(400).send({
+      success: false,
+      message: 'updated'
+    })
+  }
+}
+
 const carController = {
   getCars,
   getCarsNearby,
   getPartnersCars,
   addPartnersCars,
+  getCarInfo,
+  deleteCar,
+  updateCar,
 }
 
 export default carController

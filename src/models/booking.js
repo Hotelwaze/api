@@ -62,6 +62,9 @@ module.exports = (sequelize, DataTypes) => {
 		createdAt: {
 			type: 'TIMESTAMP',
 		},
+		withDriver:{
+			type: DataTypes.BOOLEAN,
+		},
 		updatedAt: {
 			type: DataTypes.DATE,
 		},

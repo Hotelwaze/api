@@ -42,7 +42,7 @@ const passwordReset = async (req, res) => {
 	} catch (err) {
 		res.status(err.code || 500).send({
 			message: err.message,
-		})	
+		})
 	}
 }
 const passwordResetLinkCheck = async (req, res) => {
@@ -67,7 +67,7 @@ const passwordResetLinkCheck = async (req, res) => {
 	} catch (err) {
 		res.status(err.code || 500).send({
 			message: err.message,
-		})	
+		})
 	}
 }
 
@@ -83,7 +83,7 @@ const passwordResetRequest = async (req, res) => {
 				email
 			}
 		})
-	
+
 		if (user === null) {
 			return res.status(403).json({ message: `User with email ${email} does not exist.` })
 		} else {
@@ -93,7 +93,7 @@ const passwordResetRequest = async (req, res) => {
 				resetPasswordExpires: Date.now() + 3600000
 			})
 			user.save()
-	
+
 			const templateSource = fs.readFileSync(path.join(__dirname, '../../public/email/templates/password-reset-request.hbs'), 'utf8')
 			const template = handlebars.compile(templateSource)
 			const htmlToSend = template({
@@ -111,7 +111,7 @@ const passwordResetRequest = async (req, res) => {
 	} catch (err) {
 		res.status(err.code || 500).send({
 			message: err.message,
-		})	
+		})
 	}
 }
 
@@ -216,7 +216,7 @@ const customerLogin = async (req, res) => {
 			for (let i = 0; i < roles.length; i += 1) {
 				authorities.push(roles[i].name)
 			}
-			
+
 			if (!authorities.includes('customer')) {
 				const error = new Error('Different account type. Access is not allowed.')
 				error.code = 403
@@ -322,7 +322,7 @@ const partnerLogin = async (req, res) => {
 			for (let i = 0; i < roles.length; i += 1) {
 				authorities.push(roles[i].name)
 			}
-			
+
 			if (!authorities.includes('partner_admin', 'partner_driver')) {
 				const error = new Error('Different account type. Access is not allowed.')
 				error.code = 403
@@ -351,6 +351,16 @@ const partnerLogin = async (req, res) => {
 			RefreshToken.createToken(user).then((token) => {
 				res.status(200).send({
 					message: 'Login successful',
+					user: {
+						id: user.id,
+						email: user.email,
+						name: user.fullName,
+						firstName: user.firstName,
+						lastName: user.lastName,
+						mobile: user.mobile,
+						PartnerId: user.PartnerId,
+						roles: authorities,
+					},
 					accessToken,
 					refreshToken: token,
 				})
@@ -451,7 +461,7 @@ const createCustomer = async (req, res) => {
 					console.log(err)
 					res.status(err.code || 500).send({
 						message: err.message,
-					})		
+					})
 				})
 		})
 	} catch (err) {
@@ -590,7 +600,7 @@ const createPartnerUser = async (req, res) => {
 				for (let i = 0; i < roles.length; i += 1) {
 					authorities.push(roles[i].name)
 				}
-				
+
 				res.status(200).send({
 					message: 'New user was sucessfully added.',
 				})
