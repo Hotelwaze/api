@@ -50,6 +50,7 @@ const allowedDomains = [
   'https://hotelwaze.com',
   'https://www.hotelwaze.com',
   'http://localhost:3000',
+  'https://squid-app-23gtr.ondigitalocean.app'
 ]
 
 const corsOptions = {
