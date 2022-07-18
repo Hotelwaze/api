@@ -99,18 +99,10 @@ const getPartnerInfoAdmin = async (req, res) => {
 
     const {id} = req.body;
 
-    console.log(id)
-
-    const user = await User.findOne({
-      where: {
-        id: id,
-      },
-    })
-
 
     const partner = await Partner.findOne({
       where: {
-        id: user.PartnerId
+        id: id
       },
       attributes: [
         'id',
@@ -136,14 +128,17 @@ const getPartnerInfoAdmin = async (req, res) => {
           as: 'places'
         }
       ]
-    })
+    });
+
+
     res.status(200).send({
+      success: true,
       partner
     });
 
   } catch (err) {
-    console.log(err)
-    res.status(200).send({
+    console.log(err.message)
+    res.status(500).send({
       success: false
     })
   }
