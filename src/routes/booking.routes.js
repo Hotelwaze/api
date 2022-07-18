@@ -1,21 +1,52 @@
 import bookingController from '../controllers/booking.controller'
-import { isCustomer, verifyToken } from '../middlewares/auth-jwt'
+import {  verifyToken, isCustomer } from '../middlewares/auth-jwt'
 
 const bookingRoutes = (app) => {
-	app.post(
-		'/bookings',
-		[
-			verifyToken, isCustomer
-		],
-		bookingController.createBooking
-	)
+	app.post('/bookings', [verifyToken], bookingController.createBooking);
+
 	app.get(
-		'/bookings/user/current',
+		'/current-booking/user/current',
 		[
 			verifyToken, isCustomer
 		],
 		bookingController.getCurrentUserBooking
-	)
+	);
+
+	app.post(
+		'/booking/cancel',
+		[
+			verifyToken, isCustomer
+		],
+		bookingController.cancelBooking
+	);
+
+	app.get(
+		'/booking/history',
+		[
+			verifyToken, isCustomer
+		],
+		bookingController.getBookingHistory
+	);
+
+	app.post(
+		'/booking-partners',
+		[
+			verifyToken,
+		],
+		bookingController.getBookingPartner
+	);
+
+	app.post(
+		'/booking-info',
+		[
+			verifyToken,
+		],
+		bookingController.getBookingPartnerInfo
+	);
+
+	app.get('/booking-sample', bookingController.sample);
+
+	app.post('/booking-update-status', bookingController.updateBookingStatus);
 }
 
 export default bookingRoutes

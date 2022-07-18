@@ -9,7 +9,16 @@ const prepareCreateHeader = () => ({
 	Authorization: `Basic ${base64encode(process.env.PAYMONGO_SECRET_KEY)}`,
 })
 
-const create = (resource, args) => axios.post(`${getApiUrl()}/${resource}`, args, { headers: prepareCreateHeader() })
+const create = (resource, args) => {
+	console.log(`${getApiUrl()}/${resource}`);
+	try {
+		return axios.post(`${getApiUrl()}/${resource}`, args, { headers: prepareCreateHeader() })
+	}catch (e){
+		console.log(e.message)
+		return ;
+	}
+
+}
 
 const paymongoService = {
 	create,

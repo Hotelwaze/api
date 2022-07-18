@@ -11,9 +11,9 @@ const mailer = (subject, html, to, from = 'no-reply@hotelwaze.com') => {
 			domain: process.env.MAILGUN_DOMAIN
 		}
 	}
-  
+
 	const smtpTransport = nodemailer.createTransport(mg(mailgunAuth))
-	
+
 	const mailOptions = {
 		from,
 		to,
@@ -21,15 +21,15 @@ const mailer = (subject, html, to, from = 'no-reply@hotelwaze.com') => {
 		html
 	}
 
-	smtpTransport.sendMail(mailOptions, (error) => {
-		if (error) {
-			const error = new Error('Failed to send email.')
-			error.code = 500
-			throw error
-		} else {
-			console.log('Successfully sent email.')
-		}
-	})
+	// smtpTransport.sendMail(mailOptions, (error) => {
+	// 	if (error) {
+	// 		const error = new Error('Failed to send email.')
+	// 		error.code = 500
+	// 		throw error
+	// 	} else {
+	// 		console.log('Successfully sent email.')
+	// 	}
+	// })
 }
 
 export default mailer

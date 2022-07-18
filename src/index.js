@@ -5,6 +5,8 @@ import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import dotenv from 'dotenv'
+import http from 'http';
+import WebSocket from 'ws';
 
 import roleRoutes from './routes/role.routes'
 import partnerTypeRoutes from './routes/partner-type.routes'
@@ -25,40 +27,56 @@ dotenv.config()
 const app = express()
 const port = process.env.PORT
 
+// const server = http.createServer(express);
+// const wss = new WebSocket.Server({server: server});
+//
+// wss.on('connection', function connection(ws) {
+//   console.log('CONNECT')
+//   ws.send('WELCOME CLIENT')
+//   ws.on('message', function incoming(data) {
+//     wss.clients.forEach(function each(client) {
+//       if (client != ws && client.readyState === WebSocket.OPEN) {
+//         client.send(data);
+//       }
+//     })
+//   })
+// });
+//
+
 const allowedDomains = [
-	'https://staging.admin.hotelwaze.com',
-	'https://admin.hotelwaze.com',
-	'https://staging.hotelwaze.com',
-	'https://hotelwaze.com',
-	'https://www.hotelwaze.com',
-	'http://localhost:3000',
+  'https://staging.admin.hotelwaze.com',
+  'https://admin.hotelwaze.com',
+  'https://staging.hotelwaze.com',
+  'https://hotelwaze.com',
+  'https://www.hotelwaze.com',
+  'http://localhost:3000',
 ]
 
 const corsOptions = {
-	origin: (origin, callback) => {
-		// bypass the requests with no origin (like curl requests, mobile apps, etc )
-		if (!origin) return callback(null, true)
-		if (allowedDomains.indexOf(origin) === -1) {
-			const msg = `This site ${origin} does not have an access. Only specific domains are allowed to access it.`
-			return callback(new Error(msg), false)
-		}
-		return callback(null, true)
-	},
-	credentials: true,
+  origin: (origin, callback) => {
+    // bypass the requests with no origin (like curl requests, mobile apps, etc )
+    if (!origin) return callback(null, true)
+    if (allowedDomains.indexOf(origin) === -1) {
+      const msg = `This site ${origin} does not have an access. Only specific domains are allowed to access it.`
+      return callback(new Error(msg), false)
+    }
+    return callback(null, true)
+  },
+  credentials: true,
 }
 
 app.use(cors(corsOptions))
 
 const accessLogStream = fs.createWriteStream(
-	path.join(__dirname, '../access.log'),
-	{ flags: 'a' },
+  path.join(__dirname, '../access.log'),
+  {flags: 'a'},
 )
 
 app.use(helmet())
-app.use(morgan('combined', { stream: accessLogStream }))
+app.use(morgan('combined', {stream: accessLogStream}))
 
-app.use(express.json({ limit: '50mb' }))
-app.use(express.urlencoded({ extended: true, limit: '50mb' }))
+app.use(express.json({limit: '50mb'}))
+app.use(express.urlencoded({extended: true, limit: '50mb'}))
 
 app.use('/images', express.static(path.join(__dirname, '../public/images')))
 
@@ -76,11 +94,12 @@ authRoutes(app)
 bookingRoutes(app)
 listenerRoutes(app)
 
+
 app.use((req, res) => {
-	res.status(404).send('404: Page not found')
+  res.status(404).send('404: Page not found')
 })
 
 app.listen(port, () => {
-	// eslint-disable-next-line no-console
-	console.log(`Hotelwaze platform API listening on port ${port}!`)
+  // eslint-disable-next-line no-console
+  console.log(`Hotelwaze platform API listening on port ${port}!`)
 })

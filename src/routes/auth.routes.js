@@ -36,6 +36,8 @@ const authRoutes = (app) => {
 
 	app.post('/auth/customer-login', authController.customerLogin)
 
+	app.post('/auth/partner-login', authController.partnerLogin)
+
 	app.post('/auth/refresh-token', authController.refreshToken)
 
 	app.post('/auth/request-password-reset', authController.passwordResetRequest)
