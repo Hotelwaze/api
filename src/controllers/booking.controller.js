@@ -5,20 +5,103 @@ import * as _ from 'lodash'
 import moment from 'moment-timezone'
 import paymongoService from '../services/paymongo.service'
 import {v4 as uuid} from 'uuid'
+import admin from 'firebase-admin';
 
-const {Booking, Car, Partner, CarModel, CarMake, CarType, Fee, CarBooking, Place, Invoice, InvoiceItem} = model
+const {Booking, Car, Partner, CarModel, CarMake, CarType, Fee, CarBooking, Place, Invoice, InvoiceItem, User} = model;
+
+const serviceAccount = require("../config/firebase.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  // The database URL depends on the location of the database
+  databaseURL: "https://hotel-waze-default-rtdb.asia-southeast1.firebasedatabase.app"
+});
+
+
+const sample = async (req, res) => {
+
+  // Initialize the app with a service account, granting admin privileges
+
+
+  const db = admin.database();
+
+  const refBooking = db.ref("bookings");
+
+  await refBooking.set({
+    1: true
+  });
+}
+
+const updateBookingStatus = async (req, res) => {
+  try {
+    const {
+      bookingId,
+      status
+    } = req.body
+
+    const bookingData = await Booking.findOne({
+      where: {
+        id: bookingId
+      }
+    });
+
+    if (bookingData) {
+      const currentStatus = bookingData.status;
+
+      if (status === 'booked') {
+        //capture payment
+        console.log(bookingData, "++++++++++++++++++++++++++++++++++++++");
+
+        const intentId = bookingData.paymentIntentId;
+        const args = {
+          "data": {"attributes": {"amount": bookingData.totalPrice * 0.20}}
+        }
+        const capture = await paymongoService.create(`payment_intents/${intentId}/capture`, args);
+
+        console.log(capture, "++++++++++++++++++++++++++++++++++++++");
+
+        bookingData.update({
+          status: 'booked'
+        })
+
+        bookingData.save();
+
+        if(capture) {
+          res.status(200).send({
+            message: 'Booking Updated to Booked',
+          });
+        }else{
+          res.status(500).send({
+            message: 'Something Went Wrong in capturing payment',
+          });
+        }
+        return;
+      };
+
+      bookingData.update({
+        status
+      });
+
+      bookingData.save();
+    }
+
+
+  } catch (e) {
+    console.log(e.message)
+  }
+}
 
 const createBooking = async (req, res) => {
+
+
   const {
     CarTypeId, startDate, endDate, UserId, PartnerId, extraFees,
     bookingNotes, placeDescription, placeId, lat, lng, withDriver
   } = req.body
 
-  console.log(withDriver, 'withDriver');
 
   try {
 
-    console.log(withDriver, 'BERST')
+    console.log('202020');
     if (!UserId) {
       const error = new Error('UserId is required.')
       error.code = 403
@@ -173,7 +256,36 @@ const createBooking = async (req, res) => {
         endDate: new Date(endDate)
       })
 
+      // the amount of car price
       amount += filteredPartnerCars[0]?.model?.carType?.pricePerDay * bookingDays
+
+      //add the gas price
+      amount += 1000 + amount;
+
+      //add driver fee
+
+      if(withDriver === true) {
+        amount += amount + (2000 * bookingDays);
+      }
+
+      // create booking
+      const booking = await Booking.create({
+        ref: uuid(),
+        startDate,
+        endDate,
+        totalPrice: amount,
+        notes: bookingNotes,
+        paymentIntentId: "",
+        UserId,
+        status: 'pending',
+        withDriver: withDriver,
+        PartnerId,
+      }, {transaction: t});
+
+
+      const downPayment = amount * 0.20;
+
+      console.log(booking, "YO MAMAMSA")
 
       const args = {
         data: {
@@ -187,31 +299,29 @@ const createBooking = async (req, res) => {
               },
             },
             currency: 'PHP',
+            capture_type: "manual",
+            description: "Down payment For Booking # " + booking.id,
           },
+
         },
       }
 
-      args.data.attributes.amount = amount
+      args.data.attributes.amount = downPayment;
 
 
       const paymentIntent = await paymongoService.create('payment_intents', args)
 
+      console.log(paymentIntent.data)
 
       if (paymentIntent) {
-
-        // create booking
-        const booking = await Booking.create({
-          ref: uuid(),
-          startDate,
-          endDate,
-          totalPrice: amount,
-          notes: bookingNotes,
-          paymentIntentId: paymentIntent.data.data.id,
-          UserId,
-          status: 'pending',
-          withDriver: withDriver,
-        }, {transaction: t})
-
+         Booking.update({
+            paymentIntentId: paymentIntent.data.data.id,
+          },
+          {
+            where: {
+              id: booking.id
+            }
+          });
 
         // assign car to booking
         await CarBooking.create({
@@ -235,7 +345,7 @@ const createBooking = async (req, res) => {
         const invoice = await Invoice.create({
           number: uuid(),
           status: 'open',
-          ref: 'sss',
+          ref: paymentIntent.data.data.id,
           currency: 'PHP',
           BookingId: booking.id
         }, {transaction: t})
@@ -247,16 +357,24 @@ const createBooking = async (req, res) => {
 
         await InvoiceItem.bulkCreate(bookingFees, {transaction: t})
 
+        const db = admin.database();
+
+        const refBooking = db.ref("bookings");
+        await refBooking.set({
+          [PartnerId]: true
+        });
 
         res.status(200).send({
           message: 'Payment intent creation successful',
           data: paymentIntent.data.data,
         })
+      } else {
+        console.log('DELETE THE BOOKING HERE')
       }
     })
 
   } catch (err) {
-    console.log(err.message, 'BEST')
+    console.log(err, 'BEST')
     res.status(err.code || 500).send({
       message: err.message,
     })
@@ -391,6 +509,146 @@ const getBookingHistory = async (req, res) => {
   }
 }
 
+const getBookingPartner = async (req, res) => {
+  const {userId} = req;
+
+  console.log(userId);
+
+  const args = {
+    where: {
+      PartnerId: userId
+    },
+    include: [
+      {
+        model: Car,
+        as: 'cars',
+        include: [
+          {
+            model: CarModel,
+            as: 'model',
+            include: [
+              {
+                model: CarMake,
+                as: 'make'
+              },
+              {
+                model: CarType,
+                as: 'carType'
+              }
+            ]
+          },
+          {
+            model: Partner,
+            as: 'partner'
+          },
+
+        ]
+      },
+      {
+        model: Place,
+        as: 'places'
+      },
+      {
+        model: User,
+        as: 'customer'
+      }
+    ]
+  }
+
+  try {
+    if (userId !== undefined && userId !== null && userId !== '') {
+      args.where.PartnerId = userId
+    } else {
+      const error = new Error('UserId is required.')
+      error.code = 403
+      throw error
+    }
+
+    const result = await Booking.findAll(args)
+
+    res.status(200).send({
+      message: 'Query successful',
+      data: result,
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(error.code || 500).send({
+      success: error.success,
+      message: error.message,
+    })
+  }
+}
+
+const getBookingPartnerInfo = async (req, res) => {
+  const {userId} = req;
+
+  const args = {
+    where: {
+      id: req.body.id
+    },
+    include: [
+      {
+        model: Car,
+        as: 'cars',
+        include: [
+          {
+            model: CarModel,
+            as: 'model',
+            include: [
+              {
+                model: CarMake,
+                as: 'make'
+              },
+              {
+                model: CarType,
+                as: 'carType'
+              }
+            ]
+          },
+          {
+            model: Partner,
+            as: 'partner'
+          },
+
+        ]
+      },
+      {
+        model: Place,
+        as: 'places'
+      },
+      {
+        model: User,
+        as: 'customer'
+      }
+    ]
+  }
+
+  try {
+    if (userId !== undefined && userId !== null && userId !== '') {
+      args.where.PartnerId = userId
+    } else {
+      const error = new Error('UserId is required.')
+      error.code = 403
+      throw error
+    }
+
+    const result = await Booking.findOne(args)
+
+    res.status(200).send({
+      message: 'Query successful',
+      data: result,
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(error.code || 500).send({
+      success: error.success,
+      message: error.message,
+    })
+  }
+}
+
 const cancelBooking = async (req, res) => {
   try {
 
@@ -425,5 +683,9 @@ export default {
   createBooking,
   getCurrentUserBooking,
   cancelBooking,
-  getBookingHistory
+  getBookingHistory,
+  getBookingPartner,
+  getBookingPartnerInfo,
+  updateBookingStatus,
+  sample,
 }

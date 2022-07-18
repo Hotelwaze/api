@@ -8,11 +8,11 @@ module.exports = (sequelize, DataTypes) => {
 			this.belongsTo(models.User, {
 				foreignKey: 'UserId',
 				as: 'customer'
-			})
+			});
 			this.belongsToMany(models.Car, {
 				through: 'car_booking',
 				as: 'cars',
-			})
+			});
 			this.hasMany(models.Place, {
 				foreignKey: 'placeableId',
 				constraints: false,
@@ -64,6 +64,10 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		withDriver:{
 			type: DataTypes.BOOLEAN,
+		},
+		PartnerId:{
+			type: DataTypes.INTEGER,
+			allowNull: false,
 		},
 		updatedAt: {
 			type: DataTypes.DATE,

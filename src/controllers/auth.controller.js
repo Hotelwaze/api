@@ -301,7 +301,7 @@ const partnerLogin = async (req, res) => {
 		})
 
 		if (!user) {
-			const error = new Error('Your email and/or password is incorrect.')
+			const error = new Error('Your email and/or password is incorrect.sss')
 			error.code = 403
 			throw error
 		}
@@ -323,7 +323,10 @@ const partnerLogin = async (req, res) => {
 				authorities.push(roles[i].name)
 			}
 
-			if (!authorities.includes('partner_admin', 'partner_driver')) {
+			console.log(authorities, 'S)W)W))WW))W')
+
+			const allowed = ['partner_admin', 'partner_driver', 'admin'];
+			if (!authorities.some((val) => allowed.includes(val))) {
 				const error = new Error('Different account type. Access is not allowed.')
 				error.code = 403
 				throw error
@@ -504,7 +507,7 @@ const createAdminUser = async (req, res) => {
 		await model.sequelize.transaction(async (t) => {
 			const user = await User.create(args, { transaction: t })
 
-			await user.setRoles([3], { transaction: t })
+			await user.setRoles([1], { transaction: t })
 
 			user.getRoles().then((roles) => {
 				const authorities = []
