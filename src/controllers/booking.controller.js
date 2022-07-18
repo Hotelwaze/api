@@ -6,10 +6,9 @@ import moment from 'moment-timezone'
 import paymongoService from '../services/paymongo.service'
 import {v4 as uuid} from 'uuid'
 import admin from 'firebase-admin';
-
+import serviceAccount from '../config/firebase.json'
 const {Booking, Car, Partner, CarModel, CarMake, CarType, Fee, CarBooking, Place, Invoice, InvoiceItem, User} = model;
 
-const serviceAccount = require("../config/firebase.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   // The database URL depends on the location of the database
