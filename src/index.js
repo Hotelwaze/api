@@ -46,11 +46,13 @@ const port = process.env.PORT
 const allowedDomains = [
   'https://staging.admin.hotelwaze.com',
   'https://admin.hotelwaze.com',
+  'https://partner.hotelwaze.com',
   'https://staging.hotelwaze.com',
   'https://hotelwaze.com',
   'https://www.hotelwaze.com',
   'http://localhost:3000',
-  'https://squid-app-23gtr.ondigitalocean.app'
+  'https://squid-app-23gtr.ondigitalocean.app',
+
 ]
 
 const corsOptions = {
