@@ -11,17 +11,18 @@ const {Booking, Car, Partner, CarModel, CarMake, CarType, Fee, CarBooking, Place
 
 admin.initializeApp({
   credential: admin.credential.cert({
-    "type": "service_account",
-    "project_id": "hotel-waze",
-    "private_key_id": "c50b24d93d56d035086460aa212d5d6f982b32e3",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDAyhKf1LiGFDnf\nqvXGcDqTFSp6ta1B0wuCEgH03RgkHYJcIUeUExRIYN3yFUSwL5RJcf1zZqN0I6tD\n7CdQMdhlhGHaR1a5oXmU2o6vT8rsC5ZwnlmmFUdajQASbDo/PSbbyiyWXqQsdCwq\n+gbIWQbucahg4GKyDwP6Kug7HXUkPI0dyT0NglwxSWT8HL5ibFzHtRb9DEXJuIq4\nVATjQrqGWz23RwAd3MLx23qz3ELzh3Hd3rt0czxDbT/I3auAl4OLJNYIq7N2t0r4\nLzLCHVLRiNlZNiQSIokUG8kkdDqoZhrRmQD/254hw5nCwhJq8Zw1fe1b/uS0Munc\nm9od1FvTAgMBAAECggEAA53GwP4Z1/9ZITubu0qE+W1UNqkMbvJT15oZifZRFZxY\nGFJSKBI+NygErHMprq8LIQrlA4fRWRmyL2amoM0j5K5EXPZ+8fciyLVbfSkKAr4q\nPEKRe+66P+s/18NKnxUOkuDf+pIb55mQ791wyHajDVCkepdll+F1jvkZvMIjXbfx\n+EKqYu/bCo3b6SJZQyXWyQnJwBjewJgenWDzXDYfqEsQVJ3qCWbSf9mIMQ3Re6PX\ncA3q9bAPjfSlf3oW2omudslelxYsFHLdRbhpOsFnaDDcQV5IdYQg1qxLN4NqoZh+\n6mcX18OsJ47MrRR6dP0u+/NDldtNJRXM8ikV8bE6AQKBgQD/tYzKZ16AVe7ugLWG\nmgtYjFINqiYVyU9ZWRNWSz21Iqi9CUzkBa5/RYf7MTK5aZanzDSsHOOLfFdx177M\nZD9thfQJXGJXnlAemigJdtMyaX9/yEPIAmhmPfiK2+Nyh8cDe1DKd36UdjpVX7Tt\nJHZIrZjEYfvqoedOmSBg/QeBswKBgQDBAjQfS7ZT27ihc2+amED2BxFhOetsyAD1\nXR81kihPk3FmpXUdWPlAnii68iO7xM5GNBbUSH5+qDkuQ2SiLFY2IYvcrqBwZsiM\n3sm9dYAY2u5S/l7SG4tG52Tuos+kGU52zYi3moMX/am0TtHSyIANUzo4SsOZ6+ur\nYDaXpbFtYQKBgQCywEHkN7Bq/CdjWFwM9OBbjPPLE5c+AZTTe54147EGT20vgDHc\n8E/ULlHpebHgxPwI3oovip5SIqCqN0vsa2Ofd1VpucgRQdz2F4NHYmYuxmrXc7JW\nPcCnQEjfIOl1ZY7sUybd8fxtYdxTU+0RHT0GfzvchDZrBbTBT++/fQHjWwKBgQCk\nBIhgtAmMd+MNqLiFyq8hpF37nqnXNpvB51HXR45kGWs8DI1a1Dp01DLOs2j0b0nP\n1QI1gimk3rZA/1psinr040skzW1gN6hkNguAqnKiLKJs+ud/a5LPPWLDfK4xyKOq\nR/3P8UlIQPNPW8/pbSOMr1aBcd+JVThf2ZJrCo6d4QKBgBYnewZjqYZ6jH9VFG1b\nvVnRds4JYWduoGxK8IVvewX/9MbDHt1tAmGfkiySIGnGufMlQXp2DnTKKjFLYyAy\npiGJmcIJrNZUNVCpVj4ykTfOyRvrnbRPhVop1jPvi/KN4UwzZ4uP8QAW6zm9gKAa\nHJYPV1USyUTtpZxrRexn0zn5\n-----END PRIVATE KEY-----\n",
-    "client_email": "firebase-adminsdk-idg81@hotel-waze.iam.gserviceaccount.com",
-    "client_id": "118441291244053953770",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-idg81%40hotel-waze.iam.gserviceaccount.com"
-  }),
+      "type": "service_account",
+      "project_id": "hotel-waze",
+      "private_key_id": "a97ee617d49c07577e308d17799fa1e0c8fa35e4",
+      "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDE6DV/9OFPTvg9\n9AJfk5ig4hUhg5TGzNX2DzlFqNI2bZ3QK3z7EaZ7ZrWXD5GKgswf0jWIXCu5N+6K\n2BdsjnGB9bO3rgAiDaxz0KlFU27upUMrgD+CuxN0wV8qIjd3lE6Uf4VtcAW6Jdi7\nrDkCBbtXlZGm2XSDllvUuRWn7zCP5OCbQQgW39EjcoohYVyxtvPBtAXJzSGe2EHi\nnxD7AN7qVbxHPySeDFTPNo0VB2/WtJALb3VN/s2VMYNjOQZGGYrfXGVg6b+7q7qr\n39gXOnMPA592rMclxVbLsPAoBw7mfQzhuDS1IBjHfvtjyIY93lyYFl6YmnhtFE14\nXy4T5+1TAgMBAAECggEAOhekCQ8vFd3fgS+nL5l08yogP9X5I7m0+jY9mF6ZPjOS\n1qKt6cioTEneEyYlsy6pmE3FO2iuAaQNvWrJZl6UAFqD3hH4uhM8qKKL/gcCeGfL\nbF8W3bPhppWSRPT5Vk8r68W/kKz3E5cs3RmPbBhS0CExan9HT7chep3sVLJNqnXA\nj5Hjt2PwDbULV/HHA5rTbul+un17405i6v6pr9E24tP/MlSAvEOV6AkkNNA+8Bok\nbQAvtaK3PZC9Xh01sAds3I6yyn74hcXlk+YvcsGHM/v5PtwVrGH4KCQ6Mq0QWN5E\nsPLp/bj7rzYLllO2bm/kc2FrxihmF4QHC4w1EsTc2QKBgQDhMSblCoJgCEh8JXNp\nOtRlshCkeesFVzkSuNcMtDlAsu7evSHmsWk3a2PnMg7HLXe/QqZQ8G7wV4M2clap\nEIY9Zn2+phhenZUd03g7OsU8nt9GO6dDzPKTLnABGGrLIB2g3v1pfLGhHzVv1TbX\nPs/ua33K9u4jQqyURBo21HmwDQKBgQDf2HC2BkQN7Z3W/17Pte/mjI+Qco5+TM7w\nVU66I1ZCULtgo9gPj2UpVm+zU3e3J4/Fm4/r7LkYkRTVdoYHgIbifcLeYDs4uZbh\nJCRcaJD9v/OpQbre7Gq93dWeAWnVFmAW+p5eKlggMJX71EZjuTx+oNIM7lGRSmsh\ny2B76k9a3wKBgGOwMpuqL1T71bq/iXvIA0aRsTRelF/k4Osc0HZbQg0WKRCJgXxy\nhTV3YN50Fn6t7hjJFH84MKRM2VU9AIgPPJ3pxTikpp0b/WsatlriBXZ0jjq1JbKq\nA6iMIiEaAgyxxuv0SxJrlObSvgEnzgMzVzEgfKtg7MLHPUbVbxVesg/xAoGAMP/m\nHFJez1W2eXvJO1quOx+Fxa7t9kPGAOILq79UgIu/mLYE89MF5/id1vlseVFVrYIS\nDSjyk6gekWOyjy3ZWPcCkz8pd49YscwBkaDqLEG6itByoZ3K9+j5e+7/Rb/yJNWT\nmTVXuSQpkMi059uCnI2DrYT1ogJSVUF5y2ZNHK0CgYEAv/Uvkl4DoiBFtCP49cOM\nGWjcvVSIDb1BcRYGUBu1S/1VyMq93DMqQWA2wu9UnwkVTF9XPbQ9zC+voUrpKJlK\nLjvkFBmoPRCT5c/mDJhYEbj8XblfcV9an7/k7hsMlqdGNTVhbmlD5K/cTyu+6NQ1\nd4OpPybB/b0Bbhamp6yuYww=\n-----END PRIVATE KEY-----\n",
+      "client_email": "firebase-adminsdk-idg81@hotel-waze.iam.gserviceaccount.com",
+      "client_id": "118441291244053953770",
+      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+      "token_uri": "https://oauth2.googleapis.com/token",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+      "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-idg81%40hotel-waze.iam.gserviceaccount.com"
+    }
+  ),
   // The database URL depends on the location of the database
   databaseURL: "https://hotel-waze-default-rtdb.asia-southeast1.firebasedatabase.app"
 });
@@ -54,7 +55,14 @@ const updateBookingStatus = async (req, res) => {
       }
     });
 
+    const userData = await User.findOne({
+      where: {
+        id: bookingData.UserId
+      }
+    });
+
     if (bookingData) {
+
       const currentStatus = bookingData.status;
 
       if (status === 'booked') {
@@ -76,6 +84,22 @@ const updateBookingStatus = async (req, res) => {
         bookingData.save();
 
         if (capture) {
+
+          const payload = {
+            notification: {
+              title: `Booking # ${bookingData.id} Updated`,
+              body: `Booking # ${bookingData.id} status is Updated to ${status}`,
+              sound: 'default',
+              badge: '1',
+            },
+            data: {
+              bookingId: bookingData.id.toString()
+            }
+          };
+
+          //triggers push notification to the targeted devices.
+          return admin.messaging().sendToDevice(userData.FCM_TOKEN, payload);
+
           res.status(200).send({
             message: 'Booking Updated to Booked',
           });
@@ -90,6 +114,25 @@ const updateBookingStatus = async (req, res) => {
 
       bookingData.update({
         status
+      });
+
+      const payload = {
+        notification: {
+          title: `Booking # ${bookingData.id} Updated`,
+          body: `Booking # ${bookingData.id} status is Updated to ${status}`,
+          sound: 'default',
+          badge: '1',
+        },
+        data: {
+          bookingId: `${bookingData.id}`
+        }
+      };
+
+      //triggers push notification to the targeted devices.
+      admin.messaging().sendToDevice(userData.FCM_TOKEN, payload);
+
+      res.status(200).send({
+        message: 'Booking status is Updated to' + status,
       });
 
       bookingData.save();
@@ -276,7 +319,7 @@ const createBooking = async (req, res) => {
       //add driver fee
 
       if (withDriver === true) {
-        amount += amount + (2000 * bookingDays);
+        amount = amount + (1000 * bookingDays);
       }
 
       // create booking
@@ -293,10 +336,7 @@ const createBooking = async (req, res) => {
         PartnerId,
       }, {transaction: t});
 
-
       const downPayment = amount * 0.20;
-
-      console.log(booking, "YO MAMAMSA")
 
       const args = {
         data: {

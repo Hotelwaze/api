@@ -7,624 +7,666 @@ import handlebars from 'handlebars'
 import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
-import { Op } from 'sequelize'
+import {Op} from 'sequelize'
 
-const { User, RefreshToken, Partner } = model
+const {User, RefreshToken, Partner} = model
 
 const passwordReset = async (req, res) => {
-	try {
-		const user = await User.findOne({
-			where: {
-				email: req.body.email,
-				resetPasswordToken: req.body.token,
-				resetPasswordExpires: {
-					[Op.gt]: Date.now()
-				}
-			}
-		})
+  try {
+    const user = await User.findOne({
+      where: {
+        email: req.body.email,
+        resetPasswordToken: req.body.token,
+        resetPasswordExpires: {
+          [Op.gt]: Date.now()
+        }
+      }
+    })
 
-		if (user !== null) {
-			user.update({
-				password: bcrypt.hashSync(req.body.password, 11),
-				resetPasswordToken: null,
-				resetPasswordExpires: null,
-			})
-			user.save()
+    if (user !== null) {
+      user.update({
+        password: bcrypt.hashSync(req.body.password, 11),
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
+      })
+      user.save()
 
-			res.status(200).send({
-				message: 'Password change successful. You may now login using your new password.',
-			})
-		} else {
-			const error = new Error('Password reset link is invalid or has expired.')
-			error.code = 403
-			throw error
-		}
-	} catch (err) {
-		res.status(err.code || 500).send({
-			message: err.message,
-		})
-	}
+      res.status(200).send({
+        message: 'Password change successful. You may now login using your new password.',
+      })
+    } else {
+      const error = new Error('Password reset link is invalid or has expired.')
+      error.code = 403
+      throw error
+    }
+  } catch (err) {
+    res.status(err.code || 500).send({
+      message: err.message,
+    })
+  }
 }
-const passwordResetLinkCheck = async (req, res) => {
-	try {
-		const user = await User.findOne({
-			where: {
-				resetPasswordToken: req.query.token,
-				resetPasswordExpires: {
-					[Op.gt]: Date.now()
-				}
-			}
-		})
 
-		if (user === null) {
-			return res.status(403).json({ message: 'Password reset link is invalid or has expired' })
-		} else {
-			res.status(200).send({
-				message: 'Password reset link is valid.',
-				userEmail: user.email
-			})
-		}
-	} catch (err) {
-		res.status(err.code || 500).send({
-			message: err.message,
-		})
-	}
+const passwordResetLinkCheck = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      where: {
+        resetPasswordToken: req.query.token,
+        resetPasswordExpires: {
+          [Op.gt]: Date.now()
+        }
+      }
+    })
+
+    if (user === null) {
+      return res.status(403).json({message: 'Password reset link is invalid or has expired'})
+    } else {
+      res.status(200).send({
+        message: 'Password reset link is valid.',
+        userEmail: user.email
+      })
+    }
+  } catch (err) {
+    res.status(err.code || 500).send({
+      message: err.message,
+    })
+  }
 }
 
 const passwordResetRequest = async (req, res) => {
-	const { email } = req.body
-	if (email === '') {
-		return res.status(403).json({ message: 'Email is required!' })
-	}
+  const {email} = req.body
+  if (email === '') {
+    return res.status(403).json({message: 'Email is required!'})
+  }
 
-	try {
-		const user = await User.findOne({
-			where: {
-				email
-			}
-		})
+  try {
+    const user = await User.findOne({
+      where: {
+        email
+      }
+    })
 
-		if (user === null) {
-			return res.status(403).json({ message: `User with email ${email} does not exist.` })
-		} else {
-			const token = crypto.randomBytes(20).toString('hex')
-			user.update({
-				resetPasswordToken: token,
-				resetPasswordExpires: Date.now() + 3600000
-			})
-			user.save()
+    if (user === null) {
+      return res.status(403).json({message: `User with email ${email} does not exist.`})
+    } else {
+      const token = crypto.randomBytes(20).toString('hex')
+      user.update({
+        resetPasswordToken: token,
+        resetPasswordExpires: Date.now() + 3600000
+      })
+      user.save()
 
-			const templateSource = fs.readFileSync(path.join(__dirname, '../../public/email/templates/password-reset-request.hbs'), 'utf8')
-			const template = handlebars.compile(templateSource)
-			const htmlToSend = template({
-				token,
-			})
-			mailer(
-				'Password Reset Request',
-				htmlToSend,
-				user.email
-			)
-			res.status(200).send({
-				message: 'Password request email sent.',
-			})
-		}
-	} catch (err) {
-		res.status(err.code || 500).send({
-			message: err.message,
-		})
-	}
+      const templateSource = fs.readFileSync(path.join(__dirname, '../../public/email/templates/password-reset-request.hbs'), 'utf8')
+      const template = handlebars.compile(templateSource)
+      const htmlToSend = template({
+        token,
+      })
+      mailer(
+        'Password Reset Request',
+        htmlToSend,
+        user.email
+      )
+      res.status(200).send({
+        message: 'Password request email sent.',
+      })
+    }
+  } catch (err) {
+    res.status(err.code || 500).send({
+      message: err.message,
+    })
+  }
 }
 
 const refreshToken = async (req, res) => {
-	const { refreshToken: requestToken } = req.body
+  const {refreshToken: requestToken} = req.body
 
-	if (requestToken == null) {
-		return res.status(403).json({ message: 'Refresh Token is required!' })
-	}
+  if (requestToken == null) {
+    return res.status(403).json({message: 'Refresh Token is required!'})
+  }
 
-	try {
-		const token = await RefreshToken.findOne({ where: { token: requestToken } })
+  try {
+    const token = await RefreshToken.findOne({where: {token: requestToken}})
 
-		if (!token) {
-			res.status(403).json({ message: 'Refresh token is not in database!' })
-		}
+    if (!token) {
+      res.status(403).json({message: 'Refresh token is not in database!'})
+    }
 
-		if (RefreshToken.verifyExpiration(token)) {
-			await token.destroy({ where: { id: token.id } })
+    if (RefreshToken.verifyExpiration(token)) {
+      await token.destroy({where: {id: token.id}})
 
-			res.status(403).json({
-				message: 'Refresh token was expired. Please make a new signin request',
-			})
-		}
+      res.status(403).json({
+        message: 'Refresh token was expired. Please make a new signin request',
+      })
+    }
 
-		const user = await token.getUser()
+    const user = await token.getUser()
 
-		user.getRoles().then((roles) => {
-			const authorities = []
-			for (let i = 0; i < roles.length; i += 1) {
-				authorities.push(roles[i].name)
-			}
+    user.getRoles().then((roles) => {
+      const authorities = []
+      for (let i = 0; i < roles.length; i += 1) {
+        authorities.push(roles[i].name)
+      }
 
-			const accessToken = jwt.sign(
-				{
-					id: user.id,
-					email: user.email,
-					name: user.name,
-					firstName: user.firstName,
-					lastName: user.lastName,
-					mobile: user.mobile,
-					PartnerId: user.PartnerId,
-					roles: authorities
-				},
-				authConfig.secret, {
-					expiresIn: Number(authConfig.jwtExpiration),
-				},
-			)
+      const accessToken = jwt.sign(
+        {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          mobile: user.mobile,
+          PartnerId: user.PartnerId,
+          roles: authorities
+        },
+        authConfig.secret, {
+          expiresIn: Number(authConfig.jwtExpiration),
+        },
+      )
 
-			return res.status(200).json({
-				accessToken: accessToken,
-				refreshToken: token.token,
-			})
-		})
-	} catch (err) {
-		console.log(err)
-		return res.status(500).send({ message: err })
-	}
+      return res.status(200).json({
+        accessToken: accessToken,
+        refreshToken: token.token,
+      })
+    })
+  } catch (err) {
+    console.log(err)
+    return res.status(500).send({message: err})
+  }
 }
 
 const customerLogin = async (req, res) => {
-	const { email, password } = req.body
+  const {email, password} = req.body
 
-	try {
-		if (email === null) {
-			const error = new Error('Email is required.')
-			error.code = 403
-			throw error
-		}
+  try {
+    if (email === null) {
+      const error = new Error('Email is required.')
+      error.code = 403
+      throw error
+    }
 
-		if (password === null) {
-			const error = new Error('Password is required.')
-			error.code = 403
-			throw error
-		}
+    if (password === null) {
+      const error = new Error('Password is required.')
+      error.code = 403
+      throw error
+    }
 
-		const user = await User.findOne({
-			where: {
-				email,
-			},
-		})
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+    })
 
-		if (!user) {
-			const error = new Error('Your email and/or password is incorrect.')
-			error.code = 403
-			throw error
-		}
+    if (!user) {
+      const error = new Error('Your email and/or password is incorrect.')
+      error.code = 403
+      throw error
+    }
 
-		const passwordIsValid = bcrypt.compareSync(
-			password,
-			user.password,
-		)
+    const passwordIsValid = bcrypt.compareSync(
+      password,
+      user.password,
+    )
 
-		if (!passwordIsValid) {
-			const error = new Error('Your email and/or password is incorrect.')
-			error.code = 403
-			throw error
-		}
+    if (!passwordIsValid) {
+      const error = new Error('Your email and/or password is incorrect.')
+      error.code = 403
+      throw error
+    }
 
-		user.getRoles().then((roles) => {
-			const authorities = []
-			for (let i = 0; i < roles.length; i += 1) {
-				authorities.push(roles[i].name)
-			}
+    user.getRoles().then((roles) => {
+      const authorities = []
+      for (let i = 0; i < roles.length; i += 1) {
+        authorities.push(roles[i].name)
+      }
 
-			if (!authorities.includes('customer')) {
-				const error = new Error('Different account type. Access is not allowed.')
-				error.code = 403
-				throw error
-			}
+      if (!authorities.includes('customer')) {
+        const error = new Error('Different account type. Access is not allowed.')
+        error.code = 403
+        throw error
+      }
 
-			const accessToken = jwt.sign(
-				{
-					id: user.id,
-					email: user.email,
-					name: user.name,
-					firstName: user.firstName,
-					lastName: user.lastName,
-					mobile: user.mobile,
-					PartnerId: user.PartnerId,
-					roles: authorities
-				},
-				authConfig.secret, {
-					expiresIn: Number(authConfig.jwtExpiration),
-				},
-			)
+      const accessToken = jwt.sign(
+        {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          mobile: user.mobile,
+          PartnerId: user.PartnerId,
+          roles: authorities
+        },
+        authConfig.secret, {
+          expiresIn: Number(authConfig.jwtExpiration),
+        },
+      )
 
-			RefreshToken.createToken(user).then((token) => {
-				res.status(200).send({
-					message: 'Login successful',
-					data: {
-						user: {
-							id: user.id,
-							email: user.email,
-							name: user.fullName,
-							firstName: user.firstName,
-							lastName: user.lastName,
-							mobile: user.mobile,
-							PartnerId: user.PartnerId,
-							roles: authorities,
-						},
-						accessToken,
-						refreshToken: token,
-					},
-				})
-			})
-		})
-			.catch ((err) => {
-				res.status(err.code || 500).send({
-					message: err.message,
-				})
-			})
+      RefreshToken.createToken(user).then((token) => {
+        res.status(200).send({
+          message: 'Login successful',
+          data: {
+            user: {
+              id: user.id,
+              email: user.email,
+              name: user.fullName,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              mobile: user.mobile,
+              PartnerId: user.PartnerId,
+              roles: authorities,
+            },
+            accessToken,
+            refreshToken: token,
+          },
+        })
+      })
+    })
+      .catch((err) => {
+        res.status(err.code || 500).send({
+          message: err.message,
+        })
+      })
 
-	} catch (err) {
-		res.status(err.code || 500).send({
-			message: err.message,
-		})
-	}
+  } catch (err) {
+    res.status(err.code || 500).send({
+      message: err.message,
+    })
+  }
 }
 
 const partnerLogin = async (req, res) => {
-	const { email, password } = req.body
+  const {email, password} = req.body
 
-	try {
-		if (email === null) {
-			const error = new Error('Email is required.')
-			error.code = 403
-			throw error
-		}
+  try {
+    if (email === null) {
+      const error = new Error('Email is required.')
+      error.code = 403
+      throw error
+    }
 
-		if (password === null) {
-			const error = new Error('Password is required.')
-			error.code = 403
-			throw error
-		}
+    if (password === null) {
+      const error = new Error('Password is required.')
+      error.code = 403
+      throw error
+    }
 
-		const user = await User.findOne({
-			where: {
-				email,
-			},
-			include: [
-				{
-					model: Partner,
-					as: 'account'
-				},
-			]
-		})
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+      include: [
+        {
+          model: Partner,
+          as: 'account'
+        },
+      ]
+    })
 
-		if (!user) {
-			const error = new Error('Your email and/or password is incorrect.sss')
-			error.code = 403
-			throw error
-		}
+    if (!user) {
+      const error = new Error('Your email and/or password is incorrect.sss')
+      error.code = 403
+      throw error
+    }
 
-		const passwordIsValid = bcrypt.compareSync(
-			password,
-			user.password,
-		)
+    const passwordIsValid = bcrypt.compareSync(
+      password,
+      user.password,
+    )
 
-		if (!passwordIsValid) {
-			const error = new Error('Your email and/or password is incorrect.')
-			error.code = 403
-			throw error
-		}
+    if (!passwordIsValid) {
+      const error = new Error('Your email and/or password is incorrect.')
+      error.code = 403
+      throw error
+    }
 
-		user.getRoles().then((roles) => {
-			const authorities = []
-			for (let i = 0; i < roles.length; i += 1) {
-				authorities.push(roles[i].name)
-			}
+    user.getRoles().then((roles) => {
+      const authorities = []
+      for (let i = 0; i < roles.length; i += 1) {
+        authorities.push(roles[i].name)
+      }
 
-			console.log(authorities, 'S)W)W))WW))W')
+      console.log(authorities, 'S)W)W))WW))W')
 
-			const allowed = ['partner_admin', 'partner_driver', 'admin'];
-			if (!authorities.some((val) => allowed.includes(val))) {
-				const error = new Error('Different account type. Access is not allowed.')
-				error.code = 403
-				throw error
-			}
+      const allowed = ['partner_admin', 'partner_driver', 'admin'];
+      if (!authorities.some((val) => allowed.includes(val))) {
+        const error = new Error('Different account type. Access is not allowed.')
+        error.code = 403
+        throw error
+      }
 
-			const accessToken = jwt.sign(
-				{
-					user: {
-						id: user.id,
-						email: user.email,
-						name: user.name,
-						firstName: user.firstName,
-						lastName: user.lastName,
-						mobile: user.mobile,
-						PartnerId: user.PartnerId,
-						roles: authorities
-					},
-					account: user.account,
-				},
-				authConfig.secret, {
-					expiresIn: Number(authConfig.jwtExpiration),
-				},
-			)
+      const accessToken = jwt.sign(
+        {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            mobile: user.mobile,
+            PartnerId: user.PartnerId,
+            roles: authorities
+          },
+          account: user.account,
+        },
+        authConfig.secret, {
+          expiresIn: Number(authConfig.jwtExpiration),
+        },
+      )
 
-			RefreshToken.createToken(user).then((token) => {
-				res.status(200).send({
-					message: 'Login successful',
-					user: {
-						id: user.id,
-						email: user.email,
-						name: user.fullName,
-						firstName: user.firstName,
-						lastName: user.lastName,
-						mobile: user.mobile,
-						PartnerId: user.PartnerId,
-						roles: authorities,
-					},
-					accessToken,
-					refreshToken: token,
-				})
-			})
-		})
-			.catch ((err) => {
-				res.status(err.code || 500).send({
-					message: err.message,
-				})
-			})
+      RefreshToken.createToken(user).then((token) => {
+        res.status(200).send({
+          message: 'Login successful',
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.fullName,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            mobile: user.mobile,
+            PartnerId: user.PartnerId,
+            roles: authorities,
+          },
+          accessToken,
+          refreshToken: token,
+        })
+      })
+    })
+      .catch((err) => {
+        res.status(err.code || 500).send({
+          message: err.message,
+        })
+      })
 
-	} catch (err) {
-		res.status(err.code || 500).send({
-			message: err.message,
-		})
-	}
+  } catch (err) {
+    res.status(err.code || 500).send({
+      message: err.message,
+    })
+  }
 }
 
 const createCustomer = async (req, res) => {
-	const { email, password, name } = req.body
+  const {email, password, name} = req.body
 
-	try {
-		if (email === null || email === '') {
-			const error = new Error('Email is required.')
-			error.code = 403
-			throw error
-		}
+  try {
+    if (email === null || email === '') {
+      const error = new Error('Email is required.')
+      error.code = 403
+      throw error
+    }
 
-		if (password === null || password === '') {
-			const error = new Error('Password is required.')
-			error.code = 403
-			throw error
-		}
+    if (password === null || password === '') {
+      const error = new Error('Password is required.')
+      error.code = 403
+      throw error
+    }
 
-		if (name === null || name === '') {
-			const error = new Error('Name is required.')
-			error.code = 403
-			throw error
-		}
+    if (name === null || name === '') {
+      const error = new Error('Name is required.')
+      error.code = 403
+      throw error
+    }
 
-		let args = {
-			email,
-			password: bcrypt.hashSync(password, 11),
-			name,
-			status: 'active'
-		}
+    let args = {
+      email,
+      password: bcrypt.hashSync(password, 11),
+      name,
+      status: 'active'
+    }
 
-		await model.sequelize.transaction(async (t) => {
-			const user = await User.create(args, { transaction: t })
+    await model.sequelize.transaction(async (t) => {
+      const user = await User.create(args, {transaction: t})
 
-			await user.setRoles([3], { transaction: t })
+      await user.setRoles([3], {transaction: t})
 
-			user.getRoles().then((roles) => {
-				const authorities = []
-				for (let i = 0; i < roles.length; i += 1) {
-					authorities.push(roles[i].name)
-				}
+      user.getRoles().then((roles) => {
+        const authorities = []
+        for (let i = 0; i < roles.length; i += 1) {
+          authorities.push(roles[i].name)
+        }
 
-				const accessToken = jwt.sign(
-					{
-						id: user.id,
-						email: user.email,
-						name: user.name,
-						roles: authorities
-					},
-					authConfig.secret, {
-						expiresIn: Number(authConfig.jwtExpiration),
-					},
-				)
+        const accessToken = jwt.sign(
+          {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            roles: authorities
+          },
+          authConfig.secret, {
+            expiresIn: Number(authConfig.jwtExpiration),
+          },
+        )
 
-				RefreshToken.createToken(user).then((token) => {
-					const templateSource = fs.readFileSync(path.join(__dirname, '../../public/email/templates/new-user-welcome.hbs'), 'utf8')
-					const template = handlebars.compile(templateSource)
-					const htmlToSend = template({
-						name: user.name,
-					})
-					mailer(
-						'Welcome to Hotelwaze',
-						htmlToSend,
-						user.email
-					)
-					res.status(200).send({
-						message: 'Registration successful',
-						data: {
-							user: {
-								id: user.id,
-								email: user.email,
-								name: user.fullName,
-								roles: authorities,
-							},
-							accessToken,
-							refreshToken: token,
-						},
-					})
-				})
-			})
-				.catch((err) => {
-					console.log(err)
-					res.status(err.code || 500).send({
-						message: err.message,
-					})
-				})
-		})
-	} catch (err) {
-		console.log(err)
-		res.status(err.code || 500).send({
-			message: err.message,
-		})
-	}
+        RefreshToken.createToken(user).then((token) => {
+          const templateSource = fs.readFileSync(path.join(__dirname, '../../public/email/templates/new-user-welcome.hbs'), 'utf8')
+          const template = handlebars.compile(templateSource)
+          const htmlToSend = template({
+            name: user.name,
+          })
+          mailer(
+            'Welcome to Hotelwaze',
+            htmlToSend,
+            user.email
+          )
+          res.status(200).send({
+            message: 'Registration successful',
+            data: {
+              user: {
+                id: user.id,
+                email: user.email,
+                name: user.fullName,
+                roles: authorities,
+              },
+              accessToken,
+              refreshToken: token,
+            },
+          })
+        })
+      })
+        .catch((err) => {
+          console.log(err)
+          res.status(err.code || 500).send({
+            message: err.message,
+          })
+        })
+    })
+  } catch (err) {
+    console.log(err)
+    res.status(err.code || 500).send({
+      message: err.message,
+    })
+  }
 }
 
 const createAdminUser = async (req, res) => {
-	const { email, password, name,  } = req.body
+  const {email, password, name,} = req.body
 
-	try {
-		if (email === null || email === '') {
-			const error = new Error('Email is required.')
-			error.code = 403
-			throw error
-		}
+  try {
+    if (email === null || email === '') {
+      const error = new Error('Email is required.')
+      error.code = 403
+      throw error
+    }
 
-		if (password === null || password === '') {
-			const error = new Error('Password is required.')
-			error.code = 403
-			throw error
-		}
+    if (password === null || password === '') {
+      const error = new Error('Password is required.')
+      error.code = 403
+      throw error
+    }
 
-		if (name === null || name === '') {
-			const error = new Error('Name is required.')
-			error.code = 403
-			throw error
-		}
+    if (name === null || name === '') {
+      const error = new Error('Name is required.')
+      error.code = 403
+      throw error
+    }
 
-		let args = {
-			email,
-			password: bcrypt.hashSync(password, 11),
-			name,
-			status: 'active'
-		}
+    let args = {
+      email,
+      password: bcrypt.hashSync(password, 11),
+      name,
+      status: 'active'
+    }
 
-		await model.sequelize.transaction(async (t) => {
-			const user = await User.create(args, { transaction: t })
+    await model.sequelize.transaction(async (t) => {
+      const user = await User.create(args, {transaction: t})
 
-			await user.setRoles([1], { transaction: t })
+      await user.setRoles([1], {transaction: t})
 
-			user.getRoles().then((roles) => {
-				const authorities = []
-				for (let i = 0; i < roles.length; i += 1) {
-					authorities.push(roles[i].name)
-				}
+      user.getRoles().then((roles) => {
+        const authorities = []
+        for (let i = 0; i < roles.length; i += 1) {
+          authorities.push(roles[i].name)
+        }
 
-				const accessToken = jwt.sign(
-					{
-						id: user.id,
-						email: user.email,
-						name: user.name,
-						roles: authorities
-					},
-					authConfig.secret, {
-						expiresIn: Number(authConfig.jwtExpiration),
-					},
-				)
+        const accessToken = jwt.sign(
+          {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            roles: authorities
+          },
+          authConfig.secret, {
+            expiresIn: Number(authConfig.jwtExpiration),
+          },
+        )
 
-				RefreshToken.createToken(user).then((token) => {
-					res.status(200).send({
-						message: 'Registration successful',
-						data: {
-							user: {
-								id: user.id,
-								email: user.email,
-								name: user.fullName,
-								roles: authorities,
-							},
-							accessToken,
-							refreshToken: token,
-						},
-					})
-				})
-			})
-		})
-	} catch (err) {
-		console.log(err)
-		res.status(err.code || 500).send({
-			message: err.message,
-		})
-	}
+        RefreshToken.createToken(user).then((token) => {
+          res.status(200).send({
+            message: 'Registration successful',
+            data: {
+              user: {
+                id: user.id,
+                email: user.email,
+                name: user.fullName,
+                roles: authorities,
+              },
+              accessToken,
+              refreshToken: token,
+            },
+          })
+        })
+      })
+    })
+  } catch (err) {
+    console.log(err)
+    res.status(err.code || 500).send({
+      message: err.message,
+    })
+  }
 }
 
 const createPartnerUser = async (req, res) => {
-	const { email, password, name, PartnerId, rolesList } = req.body
+  const {email, password, name, PartnerId, rolesList} = req.body
 
-	try {
-		if (email === null || email === '') {
-			const error = new Error('Email is required.')
-			error.code = 403
-			throw error
-		}
+  try {
+    if (email === null || email === '') {
+      const error = new Error('Email is required.')
+      error.code = 403
+      throw error
+    }
 
-		if (password === null || password === '') {
-			const error = new Error('Password is required.')
-			error.code = 403
-			throw error
-		}
+    if (password === null || password === '') {
+      const error = new Error('Password is required.')
+      error.code = 403
+      throw error
+    }
 
-		if (name === null || name === '') {
-			const error = new Error('Name is required.')
-			error.code = 403
-			throw error
-		}
+    if (name === null || name === '') {
+      const error = new Error('Name is required.')
+      error.code = 403
+      throw error
+    }
 
-		if (PartnerId === null || PartnerId === '') {
-			const error = new Error('Name is required.')
-			error.code = 403
-			throw error
-		}
+    if (PartnerId === null || PartnerId === '') {
+      const error = new Error('Name is required.')
+      error.code = 403
+      throw error
+    }
 
-		if (rolesList === null || rolesList === '' || rolesList.length === 0) {
-			const error = new Error('Role is required.')
-			error.code = 403
-			throw error
-		}
+    if (rolesList === null || rolesList === '' || rolesList.length === 0) {
+      const error = new Error('Role is required.')
+      error.code = 403
+      throw error
+    }
 
-		let args = {
-			email,
-			password: bcrypt.hashSync(password, 11),
-			name,
-			status: 'active'
-		}
+    let args = {
+      email,
+      password: bcrypt.hashSync(password, 11),
+      name,
+      status: 'active'
+    }
 
-		await model.sequelize.transaction(async (t) => {
-			const user = await User.create(args, { transaction: t })
+    await model.sequelize.transaction(async (t) => {
+      const user = await User.create(args, {transaction: t})
 
-			await user.setRoles(rolesList, { transaction: t })
+      await user.setRoles(rolesList, {transaction: t})
 
-			user.getRoles().then((roles) => {
-				const authorities = []
-				for (let i = 0; i < roles.length; i += 1) {
-					authorities.push(roles[i].name)
-				}
+      user.getRoles().then((roles) => {
+        const authorities = []
+        for (let i = 0; i < roles.length; i += 1) {
+          authorities.push(roles[i].name)
+        }
 
-				res.status(200).send({
-					message: 'New user was sucessfully added.',
-				})
-			})
-		})
-	} catch (err) {
-		console.log(err)
-		res.status(err.code || 500).send({
-			message: err.message,
-		})
-	}
+        res.status(200).send({
+          message: 'New user was sucessfully added.',
+        })
+      })
+    })
+  } catch (err) {
+    console.log(err)
+    res.status(err.code || 500).send({
+      message: err.message,
+    })
+  }
+}
+
+const saveFCM = async (req, res) => {
+  const {userId} = req;
+  const {fcmToken} = req.body;
+
+  try {
+
+
+    await model.sequelize.transaction(async (t) => {
+      const user = await User.findOne({
+        where: {
+          id: userId
+        }
+      });
+
+      console.log(fcmToken);
+
+      if (user) {
+        user.update({
+          FCM_TOKEN: fcmToken
+        })
+
+        user.save();
+
+        res.status(200).send({
+          message: 'FCM Updated',
+          success: true
+        });
+      }
+
+    })
+  } catch (e) {
+    console.log(e)
+    res.status(e.code || 500).send({
+      message: e.message,
+    })
+  }
+
+
 }
 
 export default {
-	passwordReset,
-	passwordResetLinkCheck,
-	passwordResetRequest,
-	refreshToken,
-	customerLogin,
-	partnerLogin,
-	createCustomer,
-	createAdminUser,
-	createPartnerUser,
+  passwordReset,
+  passwordResetLinkCheck,
+  passwordResetRequest,
+  refreshToken,
+  customerLogin,
+  partnerLogin,
+  createCustomer,
+  createAdminUser,
+  createPartnerUser,
+  saveFCM,
 }
