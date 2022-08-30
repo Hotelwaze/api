@@ -350,7 +350,6 @@ const createBooking = async (req, res) => {
               },
             },
             currency: 'PHP',
-            capture_type: "manual",
             description: "Down payment For Booking # " + booking.id,
           },
 
@@ -362,7 +361,7 @@ const createBooking = async (req, res) => {
 
       const paymentIntent = await paymongoService.create('payment_intents', args)
 
-      console.log(paymentIntent.data)
+      console.log(paymentIntent.data);
 
       if (paymentIntent) {
         Booking.update({
@@ -730,6 +729,103 @@ const cancelBooking = async (req, res) => {
   }
 }
 
+const paymentWebhook = async (req, res) => {
+  try {
+    console.log(req.body.data.attributes.type, ' ()()()()()()()()()()()()()()()()()()()()()');
+    console.log(req.body.data.attributes.data, 'DATA ()()()()()()()()()()()()()()()()()()()()()');
+
+    const paymentIntentId = req.body.data.attributes.data.attributes.payment_intent_id;
+    const event = req.body.data.attributes.type;
+
+    if(event === 'payment.failed'){
+      const booking = await Booking.findOne({
+        where: {
+          paymentIntentId,
+        }
+      });
+
+      booking.update({
+        status: 'cancelled'
+      });
+
+      booking.save();
+
+
+      const userData = await User.findOne({
+        where: {
+          id: booking.UserId
+        }
+      });
+
+      const payload = {
+        notification: {
+          title: `Booking # ${booking.id} is Cancelled Payment Failed`,
+          body: `Booking # ${booking.id} is Cancelled Payment Failed`,
+          sound: 'default',
+          badge: '1',
+        },
+        data: {
+          bookingId: `${booking.id}`,
+          isCancel: true
+        }
+      };
+
+      //triggers push notification to the targeted devices.
+      admin.messaging().sendToDevice(userData.FCM_TOKEN, payload);
+
+      return res.status(200).send({
+        message: 'Booking Updated',
+      })
+    }
+
+    if (event === 'payment.paid') {
+      const booking = await Booking.findOne({
+        where: {
+          paymentIntentId,
+        }
+      });
+
+      booking.update({
+        status: 'booked'
+      })
+
+      booking.save();
+
+
+      const userData = await User.findOne({
+        where: {
+          id: booking.UserId
+        }
+      });
+
+      const payload = {
+        notification: {
+          title: `Booking # ${booking.id} Payment Confirmed`,
+          body: `Booking # ${booking.id} is Booked`,
+          sound: 'default',
+          badge: '1',
+        },
+        data: {
+          bookingId: `${booking.id}`
+        }
+      };
+
+      //triggers push notification to the targeted devices.
+      admin.messaging().sendToDevice(userData.FCM_TOKEN, payload);
+
+      return res.status(200).send({
+        message: 'Booking Updated',
+      });
+    };
+
+  } catch (error) {
+    res.status(error.code || 500).send({
+      success: error.success,
+      message: error.message,
+    })
+  }
+}
+
 export default {
   createBooking,
   getCurrentUserBooking,
@@ -739,4 +835,5 @@ export default {
   getBookingPartnerInfo,
   updateBookingStatus,
   sample,
+  paymentWebhook,
 }
