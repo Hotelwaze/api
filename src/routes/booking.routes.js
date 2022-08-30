@@ -47,6 +47,9 @@ const bookingRoutes = (app) => {
 	app.get('/booking-sample', bookingController.sample);
 
 	app.post('/booking-update-status', bookingController.updateBookingStatus);
+
+	// app.get('/booking-payment-status', bookingController.paymentWebhook)
+	app.post('/booking-payment-status', bookingController.paymentWebhook)
 }
 
 export default bookingRoutes

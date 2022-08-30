@@ -65,6 +65,9 @@ module.exports = (sequelize, DataTypes) => {
 		updatedAt: {
 			type: DataTypes.DATE,
 		},
+		FCM_TOKEN: {
+			type: DataTypes.STRING,
+		},
 	}, {
 		sequelize,
 		modelName: 'User',
