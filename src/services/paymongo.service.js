@@ -14,6 +14,7 @@ const create = (resource, args) => {
 	try {
 		return axios.post(`${getApiUrl()}/${resource}`, args, { headers: prepareCreateHeader() })
 	}catch (e){
+		console.log(e,"DALAWA")
 		console.log(e.message)
 		return ;
 	}

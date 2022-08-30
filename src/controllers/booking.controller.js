@@ -64,7 +64,7 @@ const updateBookingStatus = async (req, res) => {
         const intentId = bookingData.paymentIntentId;
         const args = {
           "data": {"attributes": {"amount": bookingData.totalPrice * 0.20}}
-        }
+	}
         const capture = await paymongoService.create(`payment_intents/${intentId}/capture`, args);
 
         console.log(capture, "++++++++++++++++++++++++++++++++++++++");
@@ -296,7 +296,7 @@ const createBooking = async (req, res) => {
 
       const downPayment = amount * 0.20;
 
-      console.log(booking, "YO MAMAMSA")
+      console.log(booking, "YO MAMAMSA", downPayment)
 
       const args = {
         data: {
