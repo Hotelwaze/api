@@ -207,6 +207,28 @@ const updatePartnerAdmin = async (req, res) => {
       email
     } = req.body.data;
 
+    const existingUser = User.findOne({
+      where: {
+        id: {$ne: id},
+        $or: [
+          {
+            name: name
+          },
+          {
+            email: req.body.email,
+          }
+        ]
+      },
+    });
+
+    if (existingUser.id) {
+      res.status(200).send({
+        message: 'Error Duplicate Name',
+        success: false,
+      });
+      return
+    }
+
     const user = await User.findOne({
       where: {
         id,
@@ -277,7 +299,31 @@ const addPartner = async (req, res) => {
       taxNumber,
       tradeNumber,);
 
+    let partnerId = '';
+
     await model.sequelize.transaction(async (t) => {
+
+      const existingUser = User.findOne({
+        where: {
+          $or: [
+            {
+              name: name
+            },
+            {
+              email: req.body.email,
+            }
+          ]
+        },
+      });
+
+      if (existingUser.id) {
+        res.status(200).send({
+          message: 'Error Duplicate Name',
+          success: false,
+        });
+
+        return
+      }
 
       const partner = await Partner.create({
         name,
@@ -300,6 +346,8 @@ const addPartner = async (req, res) => {
         PartnerId: partner.id
       }
 
+      partnerId = partner.id;
+
       await Place.create({
         description: '17 Mamerto District,Rosario Pasig',
         placeId: '17-Mamerto-District-Rosario-Pasig',
@@ -314,14 +362,16 @@ const addPartner = async (req, res) => {
 
       res.status(200).send({
         message: 'Updated',
-        success: true
+        success: true,
+        id: user.id
       });
     });
 
   } catch (err) {
-    console.log(err)
+    console.log(err);
     res.status(200).send({
-      success: false
+      success: false,
+      message: err.message
     })
   }
 }
@@ -342,9 +392,6 @@ const updatePartnerPlace = async (req, res) => {
         id: userId,
       },
     })
-
-    console.log(lat, lng, 'ssssss')
-
 
     await Place.update({
         description,
