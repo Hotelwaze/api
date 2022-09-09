@@ -306,11 +306,7 @@ const addPartner = async (req, res) => {
 
       const existingUser = await User.findOne({
         where: {
-          $or: [{name: {$eq: name}},
-            {
-              email: {$eq: email},
-            }
-          ]
+          $or: [{name: name}, {email: email}]
         },
       });
 
