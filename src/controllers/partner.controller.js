@@ -371,7 +371,7 @@ const addPartner = async (req, res) => {
     console.log(err);
     res.status(200).send({
       success: false,
-      message: err.message
+      message: "error " + err.message
     })
   }
 }
