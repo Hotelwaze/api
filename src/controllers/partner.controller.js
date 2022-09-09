@@ -207,7 +207,7 @@ const updatePartnerAdmin = async (req, res) => {
       email
     } = req.body.data;
 
-    const existingUser = User.findOne({
+    const existingUser = await User.findOne({
       where: {
         id: {$ne: id},
         $or: [
@@ -304,12 +304,9 @@ const addPartner = async (req, res) => {
 
     await model.sequelize.transaction(async (t) => {
 
-      const existingUser = User.findOne({
+      const existingUser = await User.findOne({
         where: {
-          $or: [
-            {
-              name: {$eq: name}
-            },
+          $or: [{name: {$eq: name}},
             {
               email: {$eq: email},
             }
