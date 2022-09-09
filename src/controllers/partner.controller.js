@@ -316,6 +316,8 @@ const addPartner = async (req, res) => {
         },
       });
 
+      console.log(existingUser,"@)S)DAS)DA)SD)ADS")
+
       if (existingUser.id) {
         res.status(200).send({
           message: 'Error Duplicate Name',
