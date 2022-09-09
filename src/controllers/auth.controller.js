@@ -371,12 +371,14 @@ const partnerLogin = async (req, res) => {
       })
     })
       .catch((err) => {
+        console.log(err.message)
         res.status(err.code || 500).send({
           message: err.message,
         })
       })
 
   } catch (err) {
+    console.log(err.message)
     res.status(err.code || 500).send({
       message: err.message,
     })
