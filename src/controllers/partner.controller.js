@@ -212,14 +212,15 @@ const updatePartnerAdmin = async (req, res) => {
         id: {$ne: id},
         $or: [
           {
-            name: name
+            name: {$eq: name}
           },
           {
-            email: req.body.email,
+            email: {$eq: email},
           }
         ]
       },
     });
+
 
     if (existingUser.id) {
       res.status(200).send({
@@ -307,16 +308,16 @@ const addPartner = async (req, res) => {
         where: {
           $or: [
             {
-              name: name
+              name: {$eq: name}
             },
             {
-              email: req.body.email,
+              email: {$eq: email},
             }
           ]
         },
       });
 
-      console.log(existingUser,"@)S)DAS)DA)SD)ADS")
+      console.log(existingUser, "@)S)DAS)DA)SD)ADS")
 
       if (existingUser.id) {
         res.status(200).send({
