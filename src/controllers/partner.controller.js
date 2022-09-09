@@ -5,6 +5,7 @@ import authConfig from "../config/auth.config";
 
 const {Sequelize} = require('sequelize')
 const {Partner, PartnerType, Address, Place, User, RefreshToken} = model
+import {Op} from 'sequelize'
 
 const getPartners = async (req, res) => {
   try {
@@ -208,25 +209,28 @@ const updatePartnerAdmin = async (req, res) => {
     } = req.body.data;
 
     const existingUser = await User.findOne({
-      where: {
-        id: {$ne: id},
-        $or: [
-          {
-            name: {$eq: name}
-          },
-          {
-            email: {$eq: email},
-          }
-        ]
-      },
+      where: {name: name, id: {[Op.not]: id}},
+    });
+    const existingUserEmail = await User.findOne({
+      where: {name: email, id: {[Op.not]: id}},
     });
 
+    console.log(existingUser, "@)S)DAS)DA)SD)ADS")
 
+    if (existingUserEmail.id) {
+      res.status(200).send({
+        message: 'Error Duplicate Email',
+        success: false,
+      });
+
+      return
+    }
     if (existingUser.id) {
       res.status(200).send({
         message: 'Error Duplicate Name',
         success: false,
       });
+
       return
     }
 
@@ -307,9 +311,20 @@ const addPartner = async (req, res) => {
       const existingUser = await User.findOne({
         where: {name: name},
       });
+      const existingUserEmail = await User.findOne({
+        where: {email: email},
+      });
 
       console.log(existingUser, "@)S)DAS)DA)SD)ADS")
 
+      if (existingUserEmail.id) {
+        res.status(200).send({
+          message: 'Error Duplicate Email',
+          success: false,
+        });
+
+        return
+      }
       if (existingUser.id) {
         res.status(200).send({
           message: 'Error Duplicate Name',
