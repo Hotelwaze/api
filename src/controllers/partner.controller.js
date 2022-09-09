@@ -305,9 +305,7 @@ const addPartner = async (req, res) => {
     await model.sequelize.transaction(async (t) => {
 
       const existingUser = await User.findOne({
-        where: {
-          $or: [{name: name}, {email: email}]
-        },
+        where: {name: name},
       });
 
       console.log(existingUser, "@)S)DAS)DA)SD)ADS")
