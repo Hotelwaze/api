@@ -372,7 +372,7 @@ const addPartner = async (req, res) => {
       res.status(200).send({
         message: 'Updated',
         success: true,
-        id: user.id
+        id: partner.id
       });
     });
 
