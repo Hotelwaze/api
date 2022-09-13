@@ -313,7 +313,7 @@ const getCarsNearby = async (req, res) => {
           doors: group[key][0].model.carType.doors,
           bags: group[key][0].model.carType.bags,
           passengers: group[key][0].model.carType.passengers,
-          pricePerDay: group[key].price,
+          pricePerDay: item.partner.cars.price,
           transmission: group[key][0].transmission,
           carIds,
           driverOptions: driverOptions.join(' or ')
