@@ -71,7 +71,7 @@ const getCarInfo = async (req, res) => {
   try {
     const car = await Car.findOne({
       where: {id: id},
-      attributes: ['id', 'plateNumber', 'year', 'transmission', 'driver'],
+      attributes: ['id', 'plateNumber', 'year', 'transmission', 'driver', 'price'],
       include: [
         {
           model: CarModel,
