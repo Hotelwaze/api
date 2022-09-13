@@ -302,8 +302,6 @@ const getCarsNearby = async (req, res) => {
           driverOptions.push(car.driver)
         })
 
-        console.log(group[key][0]);
-
         driverOptions = [...new Set(driverOptions)]
         availableCarGroups.push({
           partnerId: item.partner.id,
@@ -316,7 +314,7 @@ const getCarsNearby = async (req, res) => {
           doors: group[key][0].model.carType.doors,
           bags: group[key][0].model.carType.bags,
           passengers: group[key][0].model.carType.passengers,
-          pricePerDay: group[key][0].model.carType.pricePerDay,
+          pricePerDay: group[key][0].price,
           transmission: group[key][0].transmission,
           carIds,
           driverOptions: driverOptions.join(' or ')
