@@ -299,26 +299,28 @@ const getCarsNearby = async (req, res) => {
         let driverOptions = []
         group[key].forEach((car) => {
           carIds.push(car.id)
-          driverOptions.push(car.driver)
+          // driverOptions.push(car.driver)
+
+          // driverOptions = [...new Set(driverOptions)]
+          availableCarGroups.push({
+            partnerId: item.partner.id,
+            partnerName: item.partner.name,
+            carMakeName: car.model.make.name,
+            image: car?.model?.images[0]?.file,
+            carModelName: car.model.name,
+            carTypeId: car.model.carType.id,
+            carTypeName: car.model.carType.name,
+            doors: car.model.carType.doors,
+            bags: car.model.carType.bags,
+            passengers: car.model.carType.passengers,
+            pricePerDay: car.price,
+            transmission: car.transmission,
+            carIds,
+            driverOptions: car.driver
+          })
         })
 
-        driverOptions = [...new Set(driverOptions)]
-        availableCarGroups.push({
-          partnerId: item.partner.id,
-          partnerName: item.partner.name,
-          carMakeName: group[key][0].model.make.name,
-          image: group[key][0]?.model?.images[0]?.file,
-          carModelName: group[key][0].model.name,
-          carTypeId: group[key][0].model.carType.id,
-          carTypeName: group[key][0].model.carType.name,
-          doors: group[key][0].model.carType.doors,
-          bags: group[key][0].model.carType.bags,
-          passengers: group[key][0].model.carType.passengers,
-          pricePerDay: group[key][0].price,
-          transmission: group[key][0].transmission,
-          carIds,
-          driverOptions: driverOptions.join(' or ')
-        })
+
       })
     })
 
