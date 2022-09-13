@@ -49,6 +49,10 @@ module.exports = (sequelize, DataTypes) => {
 		updatedAt: {
 			type: DataTypes.DATE,
 		},
+		price: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+		},
 	}, {
 		sequelize,
 		modelName: 'Car',

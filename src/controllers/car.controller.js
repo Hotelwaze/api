@@ -123,7 +123,9 @@ const addPartnersCars = async (req, res) => {
     });
 
     res.status(200).send({
-      cars
+      cars,
+      success: true,
+      id : cars.id
     })
   } catch (err) {
     console.log(err)
