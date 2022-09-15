@@ -209,10 +209,10 @@ const updatePartnerAdmin = async (req, res) => {
     } = req.body.data;
 
     const existingUser = await User.findOne({
-      where: {name: name, id: {[Op.not]: id}},
+      where: {name: name, PartnerId: {[Op.not]: id}},
     });
     const existingUserEmail = await User.findOne({
-      where: {name: email, id: {[Op.not]: id}},
+      where: {name: email, PartnerId: {[Op.not]: id}},
     });
 
     console.log(existingUser, "@)S)DAS)DA)SD)ADS")
@@ -236,7 +236,7 @@ const updatePartnerAdmin = async (req, res) => {
 
     const user = await User.findOne({
       where: {
-        id,
+        PartnerId:id,
       },
     })
 
