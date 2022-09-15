@@ -255,11 +255,12 @@ const updatePartnerAdmin = async (req, res) => {
         },
       });
 
-    user.update({
-      email,
-    })
-
-    user.save();
+    if(email !== user.email) {
+      user.update({
+        email,
+      })
+      user.save();
+    }
 
     if (password) {
       user.update({
