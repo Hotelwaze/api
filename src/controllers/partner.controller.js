@@ -255,6 +255,7 @@ const updatePartnerAdmin = async (req, res) => {
         },
       });
 
+    console.log(email, user.email,"__________________________________________");
     if(email !== user.email) {
       user.update({
         email,
