@@ -217,7 +217,7 @@ const updatePartnerAdmin = async (req, res) => {
 
     console.log(existingUser, "@)S)DAS)DA)SD)ADS")
 
-    if (existingUserEmail.id) {
+    if (existingUserEmail?.id) {
       res.status(200).send({
         message: 'Error Duplicate Email',
         success: false,
@@ -225,7 +225,7 @@ const updatePartnerAdmin = async (req, res) => {
 
       return
     }
-    if (existingUser.id) {
+    if (existingUser?.id) {
       res.status(200).send({
         message: 'Error Duplicate Name',
         success: false,
