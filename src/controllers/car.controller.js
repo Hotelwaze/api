@@ -302,22 +302,24 @@ const getCarsNearby = async (req, res) => {
           // driverOptions.push(car.driver)
 
           // driverOptions = [...new Set(driverOptions)]
-          availableCarGroups.push({
-            partnerId: item.partner.id,
-            partnerName: item.partner.name,
-            carMakeName: car.model.make.name,
-            image: car?.model?.images[0]?.file,
-            carModelName: car.model.name,
-            carTypeId: car.model.carType.id,
-            carTypeName: car.model.carType.name,
-            doors: car.model.carType.doors,
-            bags: car.model.carType.bags,
-            passengers: car.model.carType.passengers,
-            pricePerDay: car.price,
-            transmission: car.transmission,
-            carIds,
-            driverOptions: car.driver
-          })
+          if(item.partner.status === 'active') {
+            availableCarGroups.push({
+              partnerId: item.partner.id,
+              partnerName: item.partner.name,
+              carMakeName: car.model.make.name,
+              image: car?.model?.images[0]?.file,
+              carModelName: car.model.name,
+              carTypeId: car.model.carType.id,
+              carTypeName: car.model.carType.name,
+              doors: car.model.carType.doors,
+              bags: car.model.carType.bags,
+              passengers: car.model.carType.passengers,
+              pricePerDay: car.price,
+              transmission: car.transmission,
+              carIds,
+              driverOptions: car.driver
+            })
+          }
         })
 
 

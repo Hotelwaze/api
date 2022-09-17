@@ -255,7 +255,7 @@ const updatePartnerAdmin = async (req, res) => {
         },
       });
 
-    console.log(email, user.email,"__________________________________________");
+
     if(email !== user.email) {
       user.update({
         email,
@@ -264,6 +264,7 @@ const updatePartnerAdmin = async (req, res) => {
     }
 
     if (password) {
+      console.log(password,"____________________2222______________________" )
       user.update({
         password: bcrypt.hashSync(password, 11),
       })
