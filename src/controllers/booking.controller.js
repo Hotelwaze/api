@@ -150,7 +150,7 @@ const createBooking = async (req, res) => {
 
   const {
     CarTypeId, startDate, endDate, UserId, PartnerId, extraFees, phone,
-    bookingNotes, placeDescription, placeId, lat, lng, withDriver
+    bookingNotes, placeDescription, placeId, lat, lng, withDriver, carId
   } = req.body
 
 
@@ -186,74 +186,78 @@ const createBooking = async (req, res) => {
       throw error
     }
 
-    const bookedPartnerCars = await Car.findAll({
-      include: [
-        {
-          model: Partner,
-          as: 'partner',
-          where: {
-            id: PartnerId,
-          },
-          required: true,
-        },
-        {
-          model: Booking,
-          as: 'bookings',
-          required: true,
-          where: {
-            [Op.or]: [{
-              startDate: {
-                [Op.between]: [common.toJSDate(startDate), common.toJSDate(endDate)],
-              },
-            }, {
-              endDate: {
-                [Op.between]: [common.toJSDate(startDate), common.toJSDate(endDate)],
-              },
-            }],
-          },
-        },
-      ],
+    // const bookedPartnerCars = await Car.findAll({
+    //   include: [
+    //     {
+    //       model: Partner,
+    //       as: 'partner',
+    //       where: {
+    //         id: PartnerId,
+    //       },
+    //       required: true,
+    //     },
+    //     {
+    //       model: Booking,
+    //       as: 'bookings',
+    //       required: true,
+    //       where: {
+    //         [Op.or]: [{
+    //           startDate: {
+    //             [Op.between]: [common.toJSDate(startDate), common.toJSDate(endDate)],
+    //           },
+    //         }, {
+    //           endDate: {
+    //             [Op.between]: [common.toJSDate(startDate), common.toJSDate(endDate)],
+    //           },
+    //         }],
+    //       },
+    //     },
+    //   ],
+    // })
+    //
+    // const bookedPartnerCarIds = []
+    //
+    // if (bookedPartnerCars.length > 0) {
+    //   bookedPartnerCars.forEach((bookedPartnerCar) => {
+    //     bookedPartnerCarIds.push(bookedPartnerCar.id)
+    //   })
+    // }
+    //
+    // const allPartnerCars = await Car.findAll({
+    //   include: [
+    //     {
+    //       model: Partner,
+    //       as: 'partner',
+    //       where: {
+    //         id: PartnerId,
+    //       },
+    //     },
+    //     {
+    //       model: CarModel,
+    //       as: 'model',
+    //       required: true,
+    //       include: [
+    //         {
+    //           model: CarType,
+    //           as: 'carType',
+    //           required: true,
+    //           where: {
+    //             id: CarTypeId,
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // })
+    //
+    // let filteredPartnerCars = _.remove(allPartnerCars, (car) => !bookedPartnerCarIds.includes(car.id))
+    //
+    // filteredPartnerCars = JSON.stringify(filteredPartnerCars)
+    // filteredPartnerCars = JSON.parse(filteredPartnerCars)
+
+    const filteredPartnerCars = await Car.findOne({
+      where: {id: carId},
     })
-
-    const bookedPartnerCarIds = []
-
-    if (bookedPartnerCars.length > 0) {
-      bookedPartnerCars.forEach((bookedPartnerCar) => {
-        bookedPartnerCarIds.push(bookedPartnerCar.id)
-      })
-    }
-
-    const allPartnerCars = await Car.findAll({
-      include: [
-        {
-          model: Partner,
-          as: 'partner',
-          where: {
-            id: PartnerId,
-          },
-        },
-        {
-          model: CarModel,
-          as: 'model',
-          required: true,
-          include: [
-            {
-              model: CarType,
-              as: 'carType',
-              required: true,
-              where: {
-                id: CarTypeId,
-              },
-            },
-          ],
-        },
-      ],
-    })
-
-    let filteredPartnerCars = _.remove(allPartnerCars, (car) => !bookedPartnerCarIds.includes(car.id))
-
-    filteredPartnerCars = JSON.stringify(filteredPartnerCars)
-    filteredPartnerCars = JSON.parse(filteredPartnerCars)
 
     await model.sequelize.transaction(async (t) => {
       const bookingDays = moment(new Date(endDate)).diff(moment(new Date(startDate)), 'days')
@@ -304,7 +308,7 @@ const createBooking = async (req, res) => {
 
 
       bookingFees.push({
-        amount: filteredPartnerCars[0]?.price * bookingDays,
+        amount: filteredPartnerCars?.price * bookingDays,
         currency: 'PHP',
         description: `Vehicle rental for ${bookingDays} day/s.`,
         startDate: new Date(startDate),
@@ -312,7 +316,7 @@ const createBooking = async (req, res) => {
       })
 
       // the amount of car price
-      amount += filteredPartnerCars[0]?.price * bookingDays;
+      amount += filteredPartnerCars?.price * bookingDays;
 
       //add the gas price
       // amount += 1000 + amount;
@@ -360,7 +364,7 @@ const createBooking = async (req, res) => {
 
       args.data.attributes.amount = downPayment;
 
-      console.log(filteredPartnerCars[0], args.data.attributes)
+      console.log(filteredPartnerCars, args.data.attributes)
 
 
       const paymentIntent = await paymongoService.create('payment_intents', args)
@@ -379,9 +383,9 @@ const createBooking = async (req, res) => {
 
         // assign car to booking
         await CarBooking.create({
-          carId: filteredPartnerCars[0].id,
+          carId: filteredPartnerCars.id,
           bookingId: booking.id,
-          price: filteredPartnerCars[0]?.price,
+          price: filteredPartnerCars?.price,
         }, {transaction: t})
 
 

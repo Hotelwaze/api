@@ -125,7 +125,7 @@ const addPartnersCars = async (req, res) => {
     res.status(200).send({
       cars,
       success: true,
-      id : cars.id
+      id: cars.id
     })
   } catch (err) {
     console.log(err)
@@ -182,6 +182,7 @@ const getCarsNearby = async (req, res) => {
                   model: Booking,
                   as: 'bookings',
                   where: {
+                    status: {[Op.ne]: 'cancelled'},
                     [Op.or]: [{
                       startDate: {
                         [Op.between]: [common.toJSDate(startDate), common.toJSDate(endDate)]
@@ -302,8 +303,9 @@ const getCarsNearby = async (req, res) => {
           // driverOptions.push(car.driver)
 
           // driverOptions = [...new Set(driverOptions)]
-          if(item.partner.status === 'active') {
+          if (item.partner.status === 'active') {
             availableCarGroups.push({
+              carId: car.id,
               partnerId: item.partner.id,
               partnerName: item.partner.name,
               carMakeName: car.model.make.name,
