@@ -72,8 +72,8 @@ const updateBookingStatus = async (req, res) => {
         const intentId = bookingData.paymentIntentId;
         //100%
         const args = {
-          "data": {"attributes": {"amount": bookingData.totalPrice }}
-	}
+          "data": {"attributes": {"amount": bookingData.totalPrice}}
+        }
         const capture = await paymongoService.create(`payment_intents/${intentId}/capture`, args);
 
         console.log(capture, "++++++++++++++++++++++++++++++++++++++");
@@ -149,7 +149,7 @@ const createBooking = async (req, res) => {
 
 
   const {
-    CarTypeId, startDate, endDate, UserId, PartnerId, extraFees,
+    CarTypeId, startDate, endDate, UserId, PartnerId, extraFees, phone,
     bookingNotes, placeDescription, placeId, lat, lng, withDriver
   } = req.body
 
@@ -335,6 +335,7 @@ const createBooking = async (req, res) => {
         status: 'pending',
         withDriver: withDriver,
         PartnerId,
+        phone
       }, {transaction: t});
 
       const downPayment = amount;
@@ -359,7 +360,7 @@ const createBooking = async (req, res) => {
 
       args.data.attributes.amount = downPayment;
 
-      console.log(filteredPartnerCars[0],args.data.attributes)
+      console.log(filteredPartnerCars[0], args.data.attributes)
 
 
       const paymentIntent = await paymongoService.create('payment_intents', args)
@@ -740,7 +741,7 @@ const paymentWebhook = async (req, res) => {
     const paymentIntentId = req.body.data.attributes.data.attributes.payment_intent_id;
     const event = req.body.data.attributes.type;
 
-    if(event === 'payment.failed'){
+    if (event === 'payment.failed') {
       const booking = await Booking.findOne({
         where: {
           paymentIntentId,
@@ -819,7 +820,8 @@ const paymentWebhook = async (req, res) => {
       return res.status(200).send({
         message: 'Booking Updated',
       });
-    };
+    }
+    ;
 
   } catch (error) {
     res.status(error.code || 500).send({
