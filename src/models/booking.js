@@ -50,6 +50,9 @@ module.exports = (sequelize, DataTypes) => {
 		paymentIntentId: {
 			type: DataTypes.STRING,
 		},
+		phone: {
+			type: DataTypes.STRING,
+		},
 		status: {
 			type: DataTypes.ENUM([
 				'pending',
