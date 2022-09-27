@@ -259,52 +259,52 @@ const createBooking = async (req, res) => {
       const bookingDays = moment(new Date(endDate)).diff(moment(new Date(startDate)), 'days')
       let fees = []
 
-      if (extraFees) {
-        const feesArgs = []
-        extraFees.forEach((extraFee) => {
-          feesArgs.push({
-            id: extraFee,
-          })
-        })
-
-        fees = await Fee.findAll({
-          where: {
-            [Op.or]: feesArgs,
-          },
-        })
-      }
+      // if (extraFees) {
+      //   const feesArgs = []
+      //   extraFees.forEach((extraFee) => {
+      //     feesArgs.push({
+      //       id: extraFee,
+      //     })
+      //   })
+      //
+      //   fees = await Fee.findAll({
+      //     where: {
+      //       [Op.or]: feesArgs,
+      //     },
+      //   })
+      // }
 
 
       let amount = 0
       const bookingFees = []
 
-      if (fees.length > 0) {
-        fees.forEach((fee) => {
-          if (fee.type === 'recurring') {
-            amount += fee.value * bookingDays
-            bookingFees.push({
-              amount: fee.value * bookingDays,
-              currency: 'PHP',
-              description: fee.name.replace('_', ' '),
-              startDate: new Date(startDate),
-              endDate: new Date(endDate)
-            })
-          } else {
-            amount += fee.value
-            bookingFees.push({
-              amount: fee.value,
-              currency: 'PHP',
-              description: fee.name.replace('_', ' '),
-              startDate: new Date(startDate),
-              endDate: new Date(endDate)
-            })
-          }
-        })
-      }
+      // if (fees.length > 0) {
+      //   fees.forEach((fee) => {
+      //     if (fee.type === 'recurring') {
+      //       amount += fee.value * bookingDays
+      //       bookingFees.push({
+      //         amount: fee.value * bookingDays,
+      //         currency: 'PHP',
+      //         description: fee.name.replace('_', ' '),
+      //         startDate: new Date(startDate),
+      //         endDate: new Date(endDate)
+      //       })
+      //     } else {
+      //       amount += fee.value
+      //       bookingFees.push({
+      //         amount: fee.value,
+      //         currency: 'PHP',
+      //         description: fee.name.replace('_', ' '),
+      //         startDate: new Date(startDate),
+      //         endDate: new Date(endDate)
+      //       })
+      //     }
+      //   })
+      // }
 
 
       bookingFees.push({
-        amount: filteredPartnerCars[0]?.model?.carType.pricePerDay * bookingDays,
+        amount: filteredPartnerCars[0]?.price * bookingDays,
         currency: 'PHP',
         description: `Vehicle rental for ${bookingDays} day/s.`,
         startDate: new Date(startDate),
@@ -312,10 +312,10 @@ const createBooking = async (req, res) => {
       })
 
       // the amount of car price
-      amount += filteredPartnerCars[0]?.model?.carType?.pricePerDay * bookingDays
+      amount += filteredPartnerCars[0]?.price * bookingDays
 
       //add the gas price
-      amount += 1000 + amount;
+      // amount += 1000 + amount;
 
       //add driver fee
 
