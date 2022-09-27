@@ -312,7 +312,7 @@ const createBooking = async (req, res) => {
       })
 
       // the amount of car price
-      amount += filteredPartnerCars[0]?.price * bookingDays
+      amount += filteredPartnerCars[0]?.price * bookingDays;
 
       //add the gas price
       // amount += 1000 + amount;
@@ -380,7 +380,7 @@ const createBooking = async (req, res) => {
         await CarBooking.create({
           carId: filteredPartnerCars[0].id,
           bookingId: booking.id,
-          price: filteredPartnerCars[0]?.model?.carType?.pricePerDay,
+          price: filteredPartnerCars[0]?.price,
         }, {transaction: t})
 
 
@@ -769,7 +769,7 @@ const paymentWebhook = async (req, res) => {
         },
         data: {
           bookingId: `${booking.id}`,
-          isCancel: true
+          isCancel: 'true'
         }
       };
 
