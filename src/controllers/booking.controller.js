@@ -359,7 +359,7 @@ const createBooking = async (req, res) => {
 
       args.data.attributes.amount = downPayment;
 
-      console.log(args.data.attributes)
+      console.logs(filteredPartnerCars[0],args.data.attributes)
 
 
       const paymentIntent = await paymongoService.create('payment_intents', args)
