@@ -182,7 +182,12 @@ const getCarsNearby = async (req, res) => {
                   model: Booking,
                   as: 'bookings',
                   where: {
-                    status: {[Op.ne]: 'cancelled'},
+                    status: {
+                      [Op.and]: [
+                        {[Op.ne]: 'cancelled'},
+                        {[Op.ne]: 'done'},
+                      ]
+                    },
                     [Op.or]: [{
                       startDate: {
                         [Op.between]: [common.toJSDate(startDate), common.toJSDate(endDate)]
