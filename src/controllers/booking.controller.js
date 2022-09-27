@@ -42,6 +42,8 @@ const sample = async (req, res) => {
   });
 }
 
+
+
 const updateBookingStatus = async (req, res) => {
   try {
     const {
@@ -438,6 +440,19 @@ const createBooking = async (req, res) => {
       message: err.message,
     })
   }
+}
+
+const DeleteBooking = async (req, res) => {
+
+  await Booking.destroy({
+    where: {
+      id: req.body.id
+    }
+  });
+
+  res.status(200).send({
+    message: 'Booking '+req.body.id+' Deleted ',
+  })
 }
 
 const getCurrentUserBooking = async (req, res) => {
@@ -846,4 +861,5 @@ export default {
   updateBookingStatus,
   sample,
   paymentWebhook,
+  DeleteBooking,
 }
