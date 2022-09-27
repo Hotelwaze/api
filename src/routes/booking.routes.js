@@ -3,6 +3,7 @@ import {  verifyToken, isCustomer } from '../middlewares/auth-jwt'
 
 const bookingRoutes = (app) => {
 	app.post('/bookings', [verifyToken], bookingController.createBooking);
+	app.post('/bookings-delete', [verifyToken], bookingController.DeleteBooking);
 
 	app.get(
 		'/current-booking/user/current',
