@@ -351,13 +351,15 @@ const createBooking = async (req, res) => {
               },
             },
             currency: 'PHP',
-            description: "Down payment For Booking # " + booking.id,
+            description: "Payment For Booking # " + booking.id,
           },
 
         },
       }
 
       args.data.attributes.amount = downPayment;
+
+      console.log(args.data.attributes)
 
 
       const paymentIntent = await paymongoService.create('payment_intents', args)
