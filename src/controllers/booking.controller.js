@@ -425,6 +425,7 @@ const createBooking = async (req, res) => {
         res.status(200).send({
           message: 'Payment intent creation successful',
           data: paymentIntent.data.data,
+          bookingId: booking.id,
         })
       } else {
         console.log('DELETE THE BOOKING HERE')
